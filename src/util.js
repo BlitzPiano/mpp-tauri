@@ -1,12 +1,3 @@
-
-function mixin(obj1, obj2) {
-	for(var i in obj2) {
-		if(obj2.hasOwnProperty(i)) {
-			obj1[i] = obj2[i];
-		}
-	}
-};
-
 function EventEmitter() {
 	this._events = {};
 };
@@ -177,7 +168,9 @@ var Knob = function(canvas, min, max, step, value, name, unit) {
 
 	this.redraw();
 }
-mixin(Knob.prototype, EventEmitter.prototype);
+
+Object.setPrototypeOf(Knob.prototype, EventEmitter.prototype);
+
 Knob.prototype.redraw = function() {
 	var dot_distance = 0.28 * this.canvas.width;
 	var dot_radius = 0.03 * this.canvas.width;

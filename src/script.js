@@ -19,7 +19,7 @@ $(function () {
     });
   };
   
-  function setupMarkdown() {
+  (function () {
     var renderer = new marked.Renderer();
     renderer.image = function (text) {
       return text;
@@ -52,141 +52,14 @@ $(function () {
     marked.setOptions({
       renderer: renderer
     });
-  }
-  
-  if (!window.marked) {
-    loadScript("https://cdn.jsdelivr.net/npm/marked/marked.min.js").then(() => {
-      setupMarkdown();
-    });
-  } else {
-      setupMarkdown();
-  }
+  })();
 
   var test_mode = (window.location.hash && window.location.hash.match(/^(?:#.+)*#test(?:#.+)*$/i));
-
   var gSeeOwnCursor = (window.location.hash && window.location.hash.match(/^(?:#.+)*#seeowncursor(?:#.+)*$/i));
-
   var gMidiVolumeTest = (window.location.hash && window.location.hash.match(/^(?:#.+)*#midivolumetest(?:#.+)*$/i));
-
   var gMidiOutTest;
-
-  if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function (elt /*, from*/) {
-      var len = this.length >>> 0;
-      var from = Number(arguments[1]) || 0;
-      from = (from < 0) ? Math.ceil(from) : Math.floor(from);
-      if (from < 0) from += len;
-      for (; from < len; from++) {
-        if (from in this && this[from] === elt) return from;
-      }
-      return -1;
-    };
-  }
-
-  window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame
-    || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame
-    || function (cb) { setTimeout(cb, 1000 / 30); };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   var DEFAULT_VELOCITY = 0.5;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   var TIMING_TARGET = 1000;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // Utility
 
@@ -999,11 +872,7 @@ $(function () {
 
   ////////////////////////////////////////////////////////////////
 
-  if (window.location.hostname === "localhost") {
-    var soundDomain = `http://${location.host}`;
-  } else {
-    var soundDomain = 'https://mppclone.com';
-  }
+  var soundDomain = `http://${location.host}`;
 
   function SoundSelector(piano) {
     this.initialized = false;
@@ -2586,7 +2455,7 @@ $(function () {
     return this;
   }
 
-  mixin(Notification.prototype, EventEmitter.prototype);
+  Object.assign(Notification.prototype, EventEmitter.prototype);
   Notification.prototype.constructor = Notification;
 
   Notification.prototype.position = function () {
@@ -2659,32 +2528,8 @@ $(function () {
 
   }
 
-
-
-
-  // warn user about loud noises before starting sound (no autoplay)
-  openModal("#sound-warning");
-  $(document).off("keydown", modalHandleEsc);
-  var user_interact = function (evt) {
-    if ((evt.path || (evt.composedPath && evt.composedPath())).includes(document.getElementById('sound-warning')) || evt.target === document.getElementById('sound-warning')) {
-      closeModal();
-    }
-    document.removeEventListener("click", user_interact);
-    gPiano.audio.resume();
-  }
-  document.addEventListener("click", user_interact);
-
-
-
-
-
-
-
-
-
-
-
-
+  // no modal needed in Tauri
+  gPiano.audio.resume();
 
   // New room, change room
 
@@ -3614,7 +3459,7 @@ $(function () {
                 });
                 if (gMidiVolumeTest) {
                   var knob = document.createElement("canvas");
-                  mixin(knob, { width: 16 * window.devicePixelRatio, height: 16 * window.devicePixelRatio, className: "knob" });
+                  Object.assign(knob, { width: 16 * window.devicePixelRatio, height: 16 * window.devicePixelRatio, className: "knob" });
                   li.appendChild(knob);
                   knob = new Knob(knob, 0, 2, 0.01, input.volume, "volume");
                   knob.canvas.style.width = "16px";
@@ -3655,7 +3500,7 @@ $(function () {
                 });
                 if (gMidiVolumeTest) {
                   var knob = document.createElement("canvas");
-                  mixin(knob, { width: 16 * window.devicePixelRatio, height: 16 * window.devicePixelRatio, className: "knob" });
+                  Object.assign(knob, { width: 16 * window.devicePixelRatio, height: 16 * window.devicePixelRatio, className: "knob" });
                   li.appendChild(knob);
                   knob = new Knob(knob, 0, 2, 0.01, output.volume, "volume");
                   knob.canvas.style.width = "16px";
@@ -3792,77 +3637,6 @@ $(function () {
     Notification: Notification
   };
 
-
-
-
-
-
-
-
-
-
-  // record mp3
-  (function () {
-    var button = document.querySelector("#record-btn");
-    var audio = MPP.piano.audio;
-    var context = audio.context;
-    var encoder_sample_rate = 44100;
-    var encoder_kbps = 128;
-    var encoder = null;
-    var scriptProcessorNode = context.createScriptProcessor(4096, 2, 2);
-    var recording = false;
-    var recording_start_time = 0;
-    var mp3_buffer = [];
-    button.addEventListener("click", function (evt) {
-      if (!recording) {
-        // start recording
-        mp3_buffer = [];
-        encoder = new lamejs.Mp3Encoder(2, encoder_sample_rate, encoder_kbps);
-        scriptProcessorNode.onaudioprocess = onAudioProcess;
-        audio.masterGain.connect(scriptProcessorNode);
-        scriptProcessorNode.connect(context.destination);
-        recording_start_time = Date.now();
-        recording = true;
-        button.textContent = "Stop Recording";
-        button.classList.add("stuck");
-        new Notification({ "id": "mp3", "title": "Recording MP3...", "html": "It's recording now.  This could make things slow, maybe.  Maybe give it a moment to settle before playing.<br><br>This feature is experimental.", "duration": 10000 });
-      } else {
-        // stop recording
-        var mp3buf = encoder.flush();
-        mp3_buffer.push(mp3buf);
-        var blob = new Blob(mp3_buffer, { type: "audio/mp3" });
-        var url = URL.createObjectURL(blob);
-        scriptProcessorNode.onaudioprocess = null;
-        audio.masterGain.disconnect(scriptProcessorNode);
-        scriptProcessorNode.disconnect(context.destination);
-        recording = false;
-        button.textContent = "Record MP3";
-        button.classList.remove("stuck");
-        new Notification({ "id": "mp3", "title": "MP3 recording finished", "html": "<a href=\"" + url + "\" target=\"blank\">And here it is!</a> (open or save as)<br><br>This feature is experimental.", "duration": 0 });
-      }
-    });
-    function onAudioProcess(evt) {
-      var inputL = evt.inputBuffer.getChannelData(0);
-      var inputR = evt.inputBuffer.getChannelData(1);
-      var mp3buf = encoder.encodeBuffer(convert16(inputL), convert16(inputR));
-      mp3_buffer.push(mp3buf);
-    }
-    function convert16(samples) {
-      var len = samples.length;
-      var result = new Int16Array(len);
-      for (var i = 0; i < len; i++) {
-        result[i] = 0x8000 * samples[i];
-      }
-      return (result);
-    }
-  })();
-
-
-
-
-
-
-
   // synth
   var enableSynth = false;
   var audio = gPiano.audio;
@@ -3922,7 +3696,7 @@ $(function () {
       // on/off button
       (function () {
         var button = document.createElement("input");
-        mixin(button, { type: "button", value: "ON/OFF", className: enableSynth ? "switched-on" : "switched-off" });
+        Object.assign(button, { type: "button", value: "ON/OFF", className: enableSynth ? "switched-on" : "switched-off" });
         button.addEventListener("click", function (evt) {
           enableSynth = !enableSynth;
           button.className = enableSynth ? "switched-on" : "switched-off";
@@ -3943,7 +3717,7 @@ $(function () {
 
       // mix
       var knob = document.createElement("canvas");
-      mixin(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
+      Object.assign(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
       html.appendChild(knob);
       knob = new Knob(knob, 0, 100, 0.1, 50, "mix", "%");
       knob.canvas.style.width = "32px";
@@ -3959,7 +3733,7 @@ $(function () {
       (function () {
         osc1_type = osc_types[osc_type_index];
         var button = document.createElement("input");
-        mixin(button, { type: "button", value: osc_types[osc_type_index] });
+        Object.assign(button, { type: "button", value: osc_types[osc_type_index] });
         button.addEventListener("click", function (evt) {
           if (++osc_type_index >= osc_types.length) osc_type_index = 0;
           osc1_type = osc_types[osc_type_index];
@@ -3970,7 +3744,7 @@ $(function () {
 
       // osc1 attack
       var knob = document.createElement("canvas");
-      mixin(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
+      Object.assign(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
       html.appendChild(knob);
       knob = new Knob(knob, 0, 1, 0.001, osc1_attack, "osc1 attack", "s");
       knob.canvas.style.width = "32px";
@@ -3982,7 +3756,7 @@ $(function () {
 
       // osc1 decay
       var knob = document.createElement("canvas");
-      mixin(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
+      Object.assign(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
       html.appendChild(knob);
       knob = new Knob(knob, 0, 2, 0.001, osc1_decay, "osc1 decay", "s");
       knob.canvas.style.width = "32px";
@@ -3993,7 +3767,7 @@ $(function () {
       knob.emit("change", knob);
 
       var knob = document.createElement("canvas");
-      mixin(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
+      Object.assign(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
       html.appendChild(knob);
       knob = new Knob(knob, 0, 1, 0.001, osc1_sustain, "osc1 sustain", "x");
       knob.canvas.style.width = "32px";
@@ -4005,7 +3779,7 @@ $(function () {
 
       // osc1 release
       var knob = document.createElement("canvas");
-      mixin(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
+      Object.assign(knob, { width: 32 * window.devicePixelRatio, height: 32 * window.devicePixelRatio, className: "knob" });
       html.appendChild(knob);
       knob = new Knob(knob, 0, 2, 0.001, osc1_release, "osc1 release", "s");
       knob.canvas.style.width = "32px";

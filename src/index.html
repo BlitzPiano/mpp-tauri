@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Multiplayer Piano</title>
   <meta name="description"
     content="An online piano you can play alone or with others in real-time. MIDI support, 88 keys, velocity sensitive.  You can show off your skill or chat while listening to others play." />
   <link rel="stylesheet" href="/screen.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 
 <body>
@@ -27,17 +29,17 @@
 
   <a href="https://mpp.community/" title="MPPClone Community Forum" target="_blank">
     <button class="mppcommunity-button icon-button top-button">
-      <img src="/mppcommunity.ico" style="vertical-align: middle;">
+      <img src="/resources/mppcommunity.ico" style="vertical-align: middle;">
     </button>
   </a>
   <a href="https://discord.gg/338D2xMufC" title="MPPClone Discord" target="_blank">
     <button class="discord-button icon-button top-button">
-      <img src="/discord.ico" style="vertical-align: middle;">
+      <img src="/resources/discord.ico" style="vertical-align: middle;">
     </button>
   </a>
   <a href="https://mppclone.reddit.com" title="MPPClone Subreddit" target="_blank">
     <button class="reddit-button icon-button top-button">
-      <img src="/reddit.ico" style="vertical-align: middle;">
+      <img src="/resources/reddit.ico" style="vertical-align: middle;">
     </button>
   </a>
   <a href="https://docs.google.com/document/d/1wQvGwQdaI8PuEjSWxKDDThVIoAlCYIxQOyfyi4o6HcM/edit?usp=sharing" title="Multiplayer Piano Rules" target="_blank">
@@ -45,24 +47,6 @@
       Rules
     </button>
   </a>
-
-  <noscript>
-    <center>
-      <p>
-        Multiplayer Piano is an online, full 88-key piano you can play alone or with others in real-time. Plug up your
-        MIDI keyboard, MIDI in and out are supported. You should be able to hear some seriously talented piano players
-        performing here! Join in or just chat and listen.
-      </p>
-      <p>
-        For good performance, Chrome is highly recommended. Firefox also supports the requisite Web Audio API, but
-        performance may not be as good. Chrome has Web MIDI.
-      </p>
-      <p>
-        Of course, first you need to <a href="http://www.enable-javascript.com/" class="link">Enable Javascript</a> or
-        it won't do anything...!
-      </p>
-    </center>
-  </noscript>
 
   <div id="bottom">
     <div class="relative">
@@ -99,10 +83,6 @@
   <div id="modal">
     <div class="bg"></div>
     <div id="modals">
-      <div id="sound-warning" class="dialog">
-        <p>This site makes a lot of sound! You may want to adjust the volume before continuing.</p>
-        <button class="submit">PLAY</button>
-      </div>
       <div id="new-room" class="dialog">
         <p><input type="text" name="name" placeholder="room name" class="text translate" maxlength="512" /></p>
         <p><label><input type="checkbox" name="visible" class="checkbox translate" checked>Visible (open to everyone)</label></p>
@@ -196,13 +176,11 @@
   </div>
 
   <script src="/jquery.min.js"></script>
+  <script src="/marked.min.js"></script>
   <script src="/util.js"></script>
   <script src="/Client.js"></script>
   <script src="/NoteQuota.js"></script>
-  <script src="/lame.min.js"></script>
   <script src="/Color.js"></script>
-  <!--<script src="/ebsprite.js"></script>-->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="/script.js"></script>
 </body>
 
