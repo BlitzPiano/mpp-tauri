@@ -340,7 +340,7 @@ $(function () {
       this.playings[id] = { source: source, gain: gain, part_id: part_id }
 
       if (enableSynth) {
-        this.playings[id].voice = new synthVoice(id, time)
+        this.playings[id].voice = new SynthVoice(id, time)
       }
     }
     play(id, vol, delay_ms, part_id) {
@@ -392,32 +392,31 @@ $(function () {
 
   ////////////////////////////////////////////////////////////////
 
-  function Renderer() {}
-
-  Renderer.prototype.init = function (piano) {
-    this.piano = piano
-    this.resize()
-    return this
+  class Renderer {
+    constructor() {}
+    init(piano) {
+      this.piano = piano
+      this.resize()
+      return this
+    }
+    resize(width, height) {
+      if (typeof width == "undefined") width = $(this.piano.rootElement).width()
+      if (typeof height == "undefined") height = Math.floor(width * 0.2)
+      $(this.piano.rootElement).css({
+        height: height + "px",
+        marginTop: Math.floor($(window).height() / 2 - height / 2) + "px",
+      })
+      this.width = width * window.devicePixelRatio
+      this.height = height * window.devicePixelRatio
+    }
+    visualize(key, color) {}
   }
-
-  Renderer.prototype.resize = function (width, height) {
-    if (typeof width == "undefined") width = $(this.piano.rootElement).width()
-    if (typeof height == "undefined") height = Math.floor(width * 0.2)
-    $(this.piano.rootElement).css({
-      height: height + "px",
-      marginTop: Math.floor($(window).height() / 2 - height / 2) + "px",
-    })
-    this.width = width * window.devicePixelRatio
-    this.height = height * window.devicePixelRatio
-  }
-
-  Renderer.prototype.visualize = function (key, color) {}
 
   class CanvasRenderer extends Renderer {
     static isSupported() {
-      var canvas = document.createElement("canvas")
-      return !!(canvas.getContext && canvas.getContext("2d"))
+      return true
     }
+    
     static translateMouseEvent(evt) {
       var element = evt.target
       var offx = 0
@@ -804,150 +803,6 @@ $(function () {
     }
   }
 
-  // Soundpack Stuff by electrashave ♥
-
-  ////////////////////////////////////////////////////////////////
-
-  var soundDomain = `http://${location.host}`
-
-  class SoundSelector {
-    constructor(piano) {
-      this.initialized = false
-      this.keys = piano.keys
-      this.loading = {}
-      this.notification
-      this.packs = []
-      this.piano = piano
-      this.soundSelection = localStorage.soundSelection ? localStorage.soundSelection : "mppclassic"
-      this.addPack({ name: "MPP Classic", keys: Object.keys(this.piano.keys), ext: ".mp3", url: "/sounds/mppclassic/" })
-    }
-    addPack(pack, load) {
-      var self = this
-      self.loading[pack.url || pack] = true
-      function add(obj) {
-        var added = false
-        for (var i = 0; self.packs.length > i; i++) {
-          if (obj.name == self.packs[i].name) {
-            added = true
-            break
-          }
-        }
-
-        if (added) return console.warn("Sounds already added!!") //no adding soundpacks twice D:<
-
-        if (obj.url.substr(obj.url.length - 1) != "/") obj.url = obj.url + "/"
-        var html = document.createElement("li")
-        html.classList = "pack"
-        html.innerText = obj.name + " (" + obj.keys.length + " keys)"
-        html.onclick = function () {
-          self.loadPack(obj.name)
-          self.notification.close()
-        }
-        obj.html = html
-        self.packs.push(obj)
-        self.packs.sort(function (a, b) {
-          if (a.name < b.name) return -1
-          if (a.name > b.name) return 1
-          return 0
-        })
-        if (load) self.loadPack(obj.name)
-        delete self.loading[obj.url]
-      }
-
-      if (typeof pack == "string") {
-        let useDomain = true
-        if (pack.match(/^(http|https):\/\//i)) useDomain = false
-        $.getJSON((useDomain ? soundDomain : "") + pack + "/info.json").done(function (json) {
-          json.url = pack
-          add(json)
-        })
-      } else add(pack) //validate packs??
-    }
-    addPacks(packs) {
-      for (var i = 0; packs.length > i; i++) this.addPack(packs[i])
-    }
-    init() {
-      var self = this
-      if (self.initialized) return console.warn("Sound selector already initialized!")
-
-      if (!!Object.keys(self.loading).length)
-        return setTimeout(function () {
-          self.init()
-        }, 250)
-
-      $("#sound-btn").on("click", function () {
-        if (document.getElementById("Notification-Sound-Selector") != null) return self.notification.close()
-        var html = document.createElement("ul")
-        //$(html).append("<p>Current Sound: " + self.soundSelection + "</p>");
-        for (var i = 0; self.packs.length > i; i++) {
-          var pack = self.packs[i]
-          if (pack.name == self.soundSelection) pack.html.classList = "pack enabled"
-          else pack.html.classList = "pack"
-          html.appendChild(pack.html)
-        }
-
-        self.notification = new Notification({
-          title: "Sound Selector",
-          html: html,
-          id: "Sound-Selector",
-          duration: -1,
-          target: "#sound-btn",
-        })
-      })
-      self.initialized = true
-      self.loadPack(self.soundSelection, true)
-    }
-    loadPack(pack, f) {
-      for (var i = 0; this.packs.length > i; i++) {
-        var p = this.packs[i]
-        if (p.name == pack) {
-          pack = p
-          break
-        }
-      }
-      if (typeof pack == "string") {
-        console.warn("Sound pack does not exist! Loading default pack...")
-        return this.loadPack("MPP Classic")
-      }
-
-      if (pack.name == this.soundSelection && !f) return
-      if (pack.keys.length != Object.keys(this.piano.keys).length) {
-        this.piano.keys = {}
-        for (var i = 0; pack.keys.length > i; i++) this.piano.keys[pack.keys[i]] = this.keys[pack.keys[i]]
-        this.piano.renderer.resize()
-      }
-
-      var self = this
-      for (var i in this.piano.keys) {
-        if (!this.piano.keys.hasOwnProperty(i)) continue
-        ;(function () {
-          var key = self.piano.keys[i]
-          key.loaded = false
-          let useDomain = true
-          if (pack.url.match(/^(http|https):\/\//i)) useDomain = false
-          self.piano.audio.load(key.note, (useDomain ? soundDomain : "") + pack.url + key.note + pack.ext, function () {
-            key.loaded = true
-            key.timeLoaded = Date.now()
-          })
-        })()
-      }
-      if (localStorage) localStorage.soundSelection = pack.name
-      this.soundSelection = pack.name
-    }
-    removePack(name) {
-      var found = false
-      for (var i = 0; this.packs.length > i; i++) {
-        var pack = this.packs[i]
-        if (pack.name == name) {
-          this.packs.splice(i, 1)
-          if (pack.name == this.soundSelection) this.loadPack(this.packs[0].name) //add mpp default if none?
-          break
-        }
-      }
-      if (!found) console.warn("Sound pack not found!")
-    }
-  }
-
   // Pianoctor
 
   ////////////////////////////////////////////////////////////////
@@ -1162,10 +1017,6 @@ $(function () {
   }
   gClient.setChannel(channel_id)
 
-  gClient.on("disconnect", function (evt) {
-    //console.log(evt);
-  })
-
   var tabIsActive = true
   var youreMentioned = false
 
@@ -1218,7 +1069,7 @@ $(function () {
 
   var participantTouchhandler //declare this outside of the smaller functions so it can be used below and setup later
 
-  // Handle changes to participants
+    // Handle changes to participants
   ;(function () {
     function setupParticipantDivs(part) {
       var hadNameDiv = Boolean(part.nameDiv)
@@ -2548,7 +2399,6 @@ $(function () {
     if (evt.target != modal_bg) return
     closeModal()
   })
-
   ;(function () {
     function submit() {
       var name = $("#new-room .text[name=name]").val()
@@ -2647,7 +2497,6 @@ $(function () {
   // Rename
 
   ////////////////////////////////////////////////////////////////
-
   ;(function () {
     function submit() {
       var set = {
@@ -2787,7 +2636,6 @@ $(function () {
   })()
 
   //Accounts
-
   ;(function () {
     function logout() {
       delete localStorage.token
@@ -3471,30 +3319,31 @@ $(function () {
   var osc1_sustain = 0.5
   var osc1_release = 2.0
 
-  function synthVoice(note_name, time) {
-    var note_number = MIDI_KEY_NAMES.indexOf(note_name)
-    note_number = note_number + 9 - MIDI_TRANSPOSE
-    var freq = Math.pow(2, (note_number - 69) / 12) * 440.0
-    this.osc = context.createOscillator()
-    this.osc.type = osc1_type
-    this.osc.frequency.value = freq
-    this.gain = context.createGain()
-    this.gain.gain.value = 0
-    this.osc.connect(this.gain)
-    this.gain.connect(synth_gain)
-    this.osc.start(time)
-    this.gain.gain.setValueAtTime(0, time)
-    this.gain.gain.linearRampToValueAtTime(1, time + osc1_attack)
-    this.gain.gain.linearRampToValueAtTime(osc1_sustain, time + osc1_attack + osc1_decay)
+  class SynthVoice {
+    constructor(note_name, time) {
+      var note_number = MIDI_KEY_NAMES.indexOf(note_name)
+      note_number = note_number + 9 - MIDI_TRANSPOSE
+      var freq = Math.pow(2, (note_number - 69) / 12) * 440.0
+      this.osc = context.createOscillator()
+      this.osc.type = osc1_type
+      this.osc.frequency.value = freq
+      this.gain = context.createGain()
+      this.gain.gain.value = 0
+      this.osc.connect(this.gain)
+      this.gain.connect(synth_gain)
+      this.osc.start(time)
+      this.gain.gain.setValueAtTime(0, time)
+      this.gain.gain.linearRampToValueAtTime(1, time + osc1_attack)
+      this.gain.gain.linearRampToValueAtTime(osc1_sustain, time + osc1_attack + osc1_decay)
+    }
+    stop(time) {
+      //this.gain.gain.setValueAtTime(osc1_sustain, time);
+      this.gain.gain.linearRampToValueAtTime(0, time + osc1_release)
+      this.osc.stop(time + osc1_release)
+    }
   }
 
-  synthVoice.prototype.stop = function (time) {
-    //this.gain.gain.setValueAtTime(osc1_sustain, time);
-    this.gain.gain.linearRampToValueAtTime(0, time + osc1_release)
-    this.osc.stop(time + osc1_release)
-  }
-
-  ;(function () {
+(function () {
     var button = document.getElementById("synth-btn")
     var notification
 
@@ -3643,7 +3492,6 @@ $(function () {
       })
     }
   })()
-
   ;(function () {
     if (window.location.hostname === "multiplayerpiano.com") {
       var button = document.getElementById("client-settings-btn")
@@ -3778,7 +3626,6 @@ $(function () {
           }
           html.appendChild(setting)
         })()
-
         ;(function () {
           var setting = document.createElement("div")
           setting.classList = "setting"
@@ -3832,7 +3679,6 @@ $(function () {
           }
           html.appendChild(setting)
         })()
-
         ;(function () {
           var setting = document.createElement("select")
           setting.classList = "setting"
@@ -3862,7 +3708,6 @@ $(function () {
           }
           html.appendChild(setting)
         })()
-
         ;(function () {
           var setting = document.createElement("div")
           setting.classList = "setting"

@@ -1,3 +1,5 @@
+"use strict"
+
 self.onmessage = (event) => {
   setTimeout(() => {
     postMessage({ args: event.data.args })

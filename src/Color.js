@@ -1,3 +1,5 @@
+"use strict"
+
 class Color {
   constructor() {
     let r, g, b

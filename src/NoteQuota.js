@@ -1,3 +1,5 @@
+"use strict"
+
 class NoteQuota {
   constructor(cb) {
     this.cb = cb
