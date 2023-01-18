@@ -8,9 +8,6 @@
 
 * {
     user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
 }
 
 body,html {
@@ -28,13 +25,7 @@ body {
 
 body {
     background: #3b5054;
-    background: -moz-radial-gradient(center,ellipse cover,#ecfafd 0,#c5d5d8 100%);
-    background: -webkit-gradient(radial,center center,0,center center,100%,color-stop(0,#ecfafd),color-stop(100%,#c5d5d8));
-    background: -webkit-radial-gradient(center,ellipse cover,#ecfafd 0,#c5d5d8 100%);
-    background: -o-radial-gradient(center,ellipse cover,#ecfafd 0,#c5d5d8 100%);
-    background: -ms-radial-gradient(center,ellipse cover,#ecfafd 0,#c5d5d8 100%);
     background: radial-gradient(ellipse at center,#ecfafd 0,#c5d5d8 100%);
-    -webkit-transition: background 1s linear;
 }
 
 a {
@@ -77,8 +68,6 @@ table {
     padding: 4px;
     margin: 2px;
     border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     min-width: 50px;
     text-align: center;
     cursor: pointer;
@@ -104,7 +93,6 @@ table {
 
 #names .name.play {
     transform: translateY(-4px);
-    -webkit-transform: translateY(-4px);
 }
 
 #names .name.muted-notes {
@@ -137,8 +125,6 @@ table {
     padding: 4px;
     margin-right: 5px;
     border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     text-align: center;
     cursor: pointer;
     font-size: 10px;
@@ -146,9 +132,6 @@ table {
 }
 
 .nametext {
-    white-space: pre;
-    white-space: -moz-nowrap !important;
-    white-space: -webkit-nowrap;
     white-space: nowrap;
     word-wrap: break-word;
     word-break: break-all;
@@ -158,7 +141,7 @@ table {
 }
 
 input[type="range"] {
-        -webkit-appearance:     none;   /* Remove Safari default */
+        appearance: none;   /* Remove Safari default */
         outline: none;
         width: 210px;
         height: 5px;
@@ -174,14 +157,14 @@ input[type="range"] {
                 color-stop( 1,          hsl(200,80%,45%) )
         );
        
-        -webkit-background-clip: padding-box;
+        background-clip: padding-box;
         border: 0;
         border-bottom: 2px solid rgba(0,0,0,0.1);
         cursor: ew-resize;
 }
  
 input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance:     none;   /* Remove Safari default */
+        appearance:     none;
         position: relative;
         z-index:                1;
  
@@ -227,7 +210,7 @@ input[type="range"]:hover {
                 color-stop( 1,          hsl(200,80%,45%) )
         );
        
-        -webkit-box-shadow: inset #000 1px 1px 1px, inset #000 -1px -1px 1px;
+        box-shadow: inset #000 1px 1px 1px, inset #000 -1px -1px 1px;
  
 }
 
@@ -249,15 +232,8 @@ input[type="range"]:hover {
     margin-left: -.5%;
     margin-bottom: 100%;
     box-shadow: 1px 2px 5px #000;
-    -webkit-box-shadow: 1px 2px 5px #000;
-    -moz-box-shadow: 1px 2px 5px #000;
     border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     transition: background 4s ease-out;
-    -webkit-transition: background 4s ease-out;
-    -moz-transition: background 4s ease-out;
-    -o-transition: background 4s ease-out;
     padding: 0;
     overflow: hidden;
 }
@@ -280,22 +256,15 @@ input[type="range"]:hover {
 
 #piano .key.play {
     transform: translateY(1%);
-    -webkit-transform: translateY(1%);
-    -webkit-box-shadow: 0 1px 2px #000;
+    box-shadow: 0 1px 2px #000;
 }
 
 .ease-out {
     transition: left .1s ease-out;
-    -webkit-transition: left .1s ease-out;
-    -moz-transition: left .1s ease-out;
-    -o-transition: left .1s ease-out;
 }
 
 .ease-in {
     transition: left .1s ease-in;
-    -webkit-transition: left .1s ease-in;
-    -moz-transition: left .1s ease-in;
-    -o-transition: left .1s ease-in;
 }
 
 .slide-left {
@@ -327,8 +296,6 @@ input[type="range"]:hover {
     color: #fff;
     background: #000;
     border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     white-space: nowrap;
     padding: 1px;
     font-size: 10px;
@@ -541,8 +508,6 @@ input[type="range"]:hover {
     cursor: pointer;
     line-height: 12px;
     border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     width: 100px;
     overflow: hidden;
     white-space: nowrap;
@@ -691,9 +656,7 @@ input[type="range"]:hover {
     height: 100%;
     background: url(/resources/volume3.png) no-repeat;
     background-position: 50% 50%;
-    -webkit-appearance: none;
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
+    appearance: none;
     box-shadow: none;
     border: 0;
 }
@@ -762,9 +725,6 @@ input[type="range"]:hover {
 
 .notification-body .text {
     user-select: text;
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
 }
 
 .notification-body:after {
@@ -923,9 +883,6 @@ input[type="range"]:hover {
 
 #modal,#modal * {
     user-select: text;
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
 }
 
 .dialog {
@@ -941,11 +898,7 @@ input[type="range"]:hover {
     border: 1px solid #555;
     overflow: hidden;
     border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
     box-shadow: 0 0 8px #000;
-    -webkit-box-shadow: 0 0 8px #000;
-    -moz-box-shadow: 0 0 8px #000;
 }
 
 .dialog p {
@@ -971,15 +924,8 @@ input[type="range"]:hover {
     color: #000;
     text-shadow: #444 2px 2px 2px;
     border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
     box-shadow: inset 0 0 4px #000;
-    -webkit-box-shadow: inset 0 0 4px #000;
-    -moz-box-shadow: inset 0 0 4px #000;
     transition: all .25s;
-    -webkit-transition: all .25s;
-    -moz-transition: all .25s;
-    -o-transition: all .25s;
     position: absolute;
     bottom: -10px;
     right: -10px;
@@ -988,9 +934,6 @@ input[type="range"]:hover {
 .dialog .submit:hover {
     background: #ff8;
     transition: all .25s;
-    -webkit-transition: all .25s;
-    -moz-transition: all .25s;
-    -o-transition: all .25s;
 }
 
 #room-settings {
@@ -1089,9 +1032,6 @@ input[type="range"]:hover {
 
 #chat,#chat * {
     user-select: text;
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
 }
 
 #chat ul {
@@ -1156,8 +1096,6 @@ input[type="range"]:hover {
     padding: 4px;
     margin: 2px;
     border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     line-height: 15px;
     text-shadow: #444 1px 1px;
 }
@@ -1170,8 +1108,6 @@ input[type="range"]:hover {
     text-shadow: #888 1px 1px;
     color: #fff;
     border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
 }
 
 #chat input::-webkit-input-placeholder {
@@ -1389,10 +1325,6 @@ input[type="range"]:hover {
 
 .spin {
     animation: spin 1s linear infinite;
-    -webkit-animation: spin 1s linear infinite;
-    -moz-animation: spin 1s linear infinite;
-    -o-animation: spin 1s linear infinite;
-    -ms-animation: spin 1s linear infinite;
 }
 
 .top-button {
@@ -1459,42 +1391,12 @@ code {
     text-shadow: none;
 }
 
-@-webkit-keyframes spin {
+@keyframes spin {
     0% {
-        -webkit-transform: rotate(0);
+        transform: rotate(0);
     }
 
     100% {
-        -webkit-transform: rotate(360deg);
-    }
-}
-
-@-moz-keyframes spin {
-    0% {
-        -moz-transform: rotate(0);
-    }
-
-    100% {
-        -moz-transform: rotate(360deg);
-    }
-}
-
-@-o-keyframes spin {
-    0% {
-        -o-transform: rotate(0);
-    }
-
-    100% {
-        -o-transform: rotate(360deg);
-    }
-}
-
-@-ms-keyframes spin {
-    0% {
-        -ms-transform: rotate(0);
-    }
-
-    100% {
-        -ms-transform: rotate(360deg);
+        transform: rotate(360deg);
     }
 }
