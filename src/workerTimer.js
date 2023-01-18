@@ -1,6 +1,5 @@
-self.onmessage = function(event)
-	{
-		setTimeout(function(){
-			postMessage({args:event.data.args});
-		},event.data.delay);
-	}
+self.onmessage = (event) => {
+  setTimeout(() => {
+    postMessage({ args: event.data.args })
+  }, event.data.delay)
+}

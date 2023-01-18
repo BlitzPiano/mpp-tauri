@@ -1,0 +1,31 @@
+@import url("/global.css");
+
+#settings {
+    display: flex;
+    flex-direction: row;
+}
+
+#settings-ribbon {
+    display: flex;
+    flex-direction: column;
+    padding: 0.2rem;
+    flex-grow: 1;
+}
+
+#settings-ribbon > * {
+    padding: 0.2rem 0px;
+}
+
+#settings-content {
+    flex-grow: 2;
+}
+
+.dialog {
+    width: 100%;
+    height: 100%;
+}
+
+#settings div {
+    float: left;
+    margin-left: 2px;
+}

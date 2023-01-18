@@ -1,24 +1,6 @@
 // 钢琴
 
 $(function () {
-
-  console.log("%cWelcome to MPP's developer console!", "color:blue; font-size:20px;");
-  console.log("%cCheck out the source code: https://github.com/LapisHusky/mppclone/tree/main/client\nGuide for coders and bot developers: https://docs.google.com/document/d/1OrxwdLD1l1TE8iau6ToETVmnLuLXyGBhA0VfAY1Lf14/edit?usp=sharing", "color:gray; font-size:12px;")
-
-  const loadScript = function (url) {
-    return new Promise(function (resolve, reject) {
-      const script = document.createElement('script');
-        script.src = url;
-
-        script.addEventListener('load', function () {
-            // The script is loaded completely
-            resolve(true);
-        });
-
-        document.head.appendChild(script);
-    });
-  };
-  
   (function () {
     var renderer = new marked.Renderer();
     renderer.image = function (text) {
@@ -108,20 +90,6 @@ $(function () {
     "Notes in G Minor" : ["G", "A", "B♭", "C", "D", "E♭", "F", "G"],
     "Notes in G# / Ab Minor" : ["A♭", "B♭", "B", "D♭", "E♭", "E", "G♭", "A♭"],
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // performing translation
 
@@ -249,20 +217,6 @@ $(function () {
 
   Translation.perform();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // AudioEngine classes
 
   ////////////////////////////////////////////////////////////////
@@ -293,7 +247,6 @@ $(function () {
   AudioEngine.prototype.resume = function () {
     this.paused = false;
   };
-
 
   AudioEngineWeb = function () {
     this.threshold = 0;
@@ -444,31 +397,6 @@ $(function () {
     this.context.resume();
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Renderer classes
 
   ////////////////////////////////////////////////////////////////
@@ -493,14 +421,11 @@ $(function () {
   Renderer.prototype.visualize = function (key, color) {
   };
 
-
-
-
   var CanvasRenderer = function () {
     Renderer.call(this);
   };
 
-  CanvasRenderer.prototype = new Renderer();
+  Object.setPrototypeOf(CanvasRenderer.prototype, Renderer.prototype)
 
   CanvasRenderer.prototype.init = function (piano) {
     this.canvas = document.createElement("canvas");
@@ -858,16 +783,6 @@ $(function () {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
   // Soundpack Stuff by electrashave ♥
 
   ////////////////////////////////////////////////////////////////
@@ -1010,16 +925,6 @@ $(function () {
     if (!found) console.warn("Sound pack not found!");
   };
 
-
-
-
-
-
-
-
-
-
-
   // Pianoctor
 
   ////////////////////////////////////////////////////////////////
@@ -1119,18 +1024,11 @@ $(function () {
   //gSoundSelector.addPacks(["/sounds/Emotional_2.0/", "/sounds/Harp/", "/sounds/Music_Box/", "/sounds/Vintage_Upright/", "/sounds/Steinway_Grand/", "/sounds/Emotional/", "/sounds/Untitled/"]);
   gSoundSelector.init();
 
-
-
-
-
-
-
   var gAutoSustain = false;
   var gSustain = false;
 
   var gHeldNotes = {};
   var gSustainedNotes = {};
-
 
   function press(id, vol) {
     if (!gClient.preventsPlaying() && gNoteQuota.spend(1)) {
@@ -1175,9 +1073,6 @@ $(function () {
     }
   }
 
-
-
-
   function getParameterByName(name, url = window.location.href) {
     name = name.replace(/[\[\]]/g, '\\$&');
     var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
@@ -1185,22 +1080,6 @@ $(function () {
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
-  }
-
-  //html/css overrides for multiplayerpiano.com
-  if (window.location.hostname === 'multiplayerpiano.com') {
-    //disable autocomplete
-    $('#chat-input')[0].autocomplete = 'off';
-    //add rules button
-    let aElement = document.createElement("a");
-    aElement.href = "https://docs.google.com/document/d/1wQvGwQdaI8PuEjSWxKDDThVIoAlCYIxQOyfyi4o6HcM/edit?usp=sharing";
-    aElement.title = "Multiplayer Piano Rules";
-    aElement.target = "_blank";
-    let buttonElement = document.createElement("button");
-    buttonElement.style = "height: 24px; font-size: 12px; background: #111; border: 1px solid #444; padding: 5px; cursor: pointer; line-height: 12px; border-radius: 2px; overflow: hidden; white-space: nowrap; color: #fff; position: absolute; right: 6px; top: 0px; z-index: 20001;"
-    buttonElement.innerText = "Rules"
-    aElement.appendChild(buttonElement);
-    document.body.appendChild(aElement);
   }
 
   function getRoomNameFromURL() {
@@ -1212,7 +1091,6 @@ $(function () {
     if (!channel_id) channel_id = "lobby";
     return channel_id;
   }
-
 
   // internet science
 
@@ -1247,7 +1125,6 @@ $(function () {
   gClient.on("disconnect", function (evt) {
     //console.log(evt);
   });
-
 
   var tabIsActive = true;
   var youreMentioned = false;
@@ -1365,7 +1242,6 @@ $(function () {
       });
       $("#names").html(arr);
 
-
     }
     gClient.on("participant added", function (part) {
 
@@ -1473,7 +1349,6 @@ $(function () {
     gClient.on("participant added", updateCursor);
   })();
 
-
   // Handle changes to crown
   (function () {
     var jqcrown = $('<div id="crown"></div>').appendTo(document.body).hide();
@@ -1524,7 +1399,6 @@ $(function () {
     });
   })();
 
-
   // Playing notes
   gClient.on("n", function (msg) {
     var t = msg.t - gClient.serverTimeOffset + TIMING_TARGET - Date.now();
@@ -1574,7 +1448,6 @@ $(function () {
     mx = ((event.pageX / $(window).width()) * 100).toFixed(2);
     my = ((event.pageY / $(window).height()) * 100).toFixed(2);
   });
-
 
   // Room settings button
   (function () {
@@ -1709,12 +1582,6 @@ $(function () {
     $("#room-notice").fadeOut(1000);
   });
 
-
-
-
-
-
-
   var gPianoMutes = (localStorage.pianoMutes ? localStorage.pianoMutes : "").split(',').filter(v => v);
   var gChatMutes = (localStorage.chatMutes ? localStorage.chatMutes : "").split(',').filter(v => v);
   var gShowIdsInChat = localStorage.showIdsInChat == "true";
@@ -1734,8 +1601,6 @@ $(function () {
   var gNoPreventDefault = localStorage.noPreventDefault == "true";
 //   var gWarnOnLinks = localStorage.warnOnLinks ? loalStorage.warnOnLinks == "true" : true;
 
-
-
   // Hide piano attribute
   if (gHidePiano) {
     $("#piano").hide();
@@ -1750,8 +1615,6 @@ $(function () {
     $("#chat").show();
   }
 
-
-
   // smooth cursor attribute
 
   if (gSmoothCursor) {
@@ -1759,7 +1622,6 @@ $(function () {
   } else {
     $("#cursors").removeAttr('smooth-cursors');
   }
-
 
   // Background color
   (function () {
@@ -1827,12 +1689,6 @@ $(function () {
     });
   })();
 
-
-
-
-
-
-
   var volume_slider = document.getElementById("volume-slider");
   volume_slider.value = gPiano.audio.volume;
   $("#volume-label").text("Volume: " + Math.floor(gPiano.audio.volume * 100) + "%");
@@ -1843,15 +1699,10 @@ $(function () {
     $("#volume-label").text("Volume: " + Math.floor(v * 100) + "%");
   });
 
-
-
-
   var Note = function (note, octave) {
     this.note = note;
     this.octave = octave || 0;
   };
-
-
 
   var n = function (a, b) { return { note: new Note(a, b), held: false }; };
 
@@ -1949,9 +1800,7 @@ $(function () {
   }
 
   var key_binding = gVirtualPianoLayout ? layouts.VP : layouts.MPP;
-
   var capsLockKey = false;
-
   var transpose = 0;
 
   function handleKeyDown(evt) {
@@ -2103,14 +1952,9 @@ $(function () {
 
   captureKeyboard();
 
-
   var velocityFromMouseY = function () {
     return 0.1 + (my / 100) * 0.6;
   };
-
-
-
-
 
   // NoteQuota
   var gNoteQuota = (function () {
@@ -2384,21 +2228,6 @@ $(function () {
     };
   })();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Notification class
 
   ////////////////////////////////////////////////////////////////
@@ -2455,8 +2284,7 @@ $(function () {
     return this;
   }
 
-  Object.assign(Notification.prototype, EventEmitter.prototype);
-  Notification.prototype.constructor = Notification;
+  Object.setPrototypeOf(Notification.prototype, EventEmitter.prototype);
 
   Notification.prototype.position = function () {
     var pos = this.target.offset();
@@ -2479,20 +2307,6 @@ $(function () {
     });
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // set variables from settings or set settings
 
   ////////////////////////////////////////////////////////////////
@@ -2508,9 +2322,6 @@ $(function () {
       });
     }, 30000);
   }
-
-
-
 
   if (window.localStorage) {
 
@@ -2620,10 +2431,6 @@ $(function () {
     }, 1000);
   });
 
-
-
-
-
   //Account button
   $("#account-btn").on("click", function (evt) {
     evt.stopPropagation();
@@ -2638,10 +2445,6 @@ $(function () {
       $("#account #account-info").hide()
     }
   });
-
-
-
-
 
   var gModal;
 
@@ -2711,13 +2514,6 @@ $(function () {
     });
   })();
 
-
-
-
-
-
-
-
   function changeRoom(name, direction, settings, push) {
     if (!settings) settings = {};
     if (!direction) direction = "right";
@@ -2764,25 +2560,6 @@ $(function () {
     changeRoom(name, direction, null, false);
   });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Rename
 
   ////////////////////////////////////////////////////////////////
@@ -2813,14 +2590,6 @@ $(function () {
       return false;
     });
   })();
-
-
-
-
-
-
-
-
 
   //site-wide bans
   (function () {
@@ -2915,13 +2684,6 @@ $(function () {
     }
   })();
 
-
-
-
-
-
-
-
   //Accounts
 
   (function () {
@@ -2942,20 +2704,6 @@ $(function () {
       }
     });
   })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // chatctor
 
@@ -3259,20 +3007,6 @@ $(function () {
     };
   })();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // MIDI
 
   ////////////////////////////////////////////////////////////////
@@ -3542,18 +3276,6 @@ $(function () {
     }
   })();
 
-
-
-
-
-
-
-
-
-
-
-
-
   // bug supply
 
   ////////////////////////////////////////////////////////////////
@@ -3606,14 +3328,6 @@ $(function () {
     var img = new Image();
     img.src = enc;*/
   };
-
-
-
-
-
-
-
-
 
   // API
   window.MPP = {
@@ -4019,7 +3733,6 @@ $(function () {
             setting.value = gHighlightScaleNotes;
           }
 
-
           setting.onchange = function () {
             localStorage.highlightScaleNotes = setting.value;
             gHighlightScaleNotes = setting.value;
@@ -4047,7 +3760,6 @@ $(function () {
           html.appendChild(setting);
         })();
 
-
         // warn on links
         /*(function() {
           var setting = document.createElement("div");
@@ -4068,8 +3780,6 @@ $(function () {
         //var div = document.createElement("div");
         //div.innerHTML = "<br><br><br><br><center>this space intentionally left blank</center><br><br><br><br>";
         //html.appendChild(div);
-
-
 
         // notification
         notification = new Notification({ title: "Client Settings", html: html, duration: -1, target: "#client-settings-btn" });
@@ -4293,234 +4003,5 @@ $(function () {
     }
   })();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  //confetti, to be removed after the 10th anniversary
-  //source: https://www.cssscript.com/confetti-falling-animation/
-
-  var maxParticleCount = 500; //set max confetti count
-  var particleSpeed = 2; //set the particle animation speed
-  var startConfetti; //call to start confetti animation
-  var stopConfetti; //call to stop adding confetti
-  var toggleConfetti; //call to start or stop the confetti animation depending on whether it's already running
-  var removeConfetti; //call to stop the confetti animation and remove all confetti immediately
-
-  (function () {
-    startConfetti = startConfettiInner;
-    stopConfetti = stopConfettiInner;
-    toggleConfetti = toggleConfettiInner;
-    removeConfetti = removeConfettiInner;
-    var colors = ["DodgerBlue", "OliveDrab", "Gold", "Pink", "SlateBlue", "LightBlue", "Violet", "PaleGreen", "SteelBlue", "SandyBrown", "Chocolate", "Crimson"]
-    var streamingConfetti = false;
-    var animationTimer = null;
-    var particles = [];
-    var waveAngle = 0;
-
-    function resetParticle(particle, width, height) {
-      particle.color = colors[(Math.random() * colors.length) | 0];
-      particle.x = Math.random() * width;
-      particle.y = Math.random() * height - height;
-      particle.diameter = Math.random() * 10 + 5;
-      particle.tilt = Math.random() * 10 - 10;
-      particle.tiltAngleIncrement = Math.random() * 0.07 + 0.05;
-      particle.tiltAngle = 0;
-      return particle;
-    }
-
-    function startConfettiInner() {
-      var width = window.innerWidth;
-      var height = window.innerHeight;
-      window.requestAnimFrame = (function () {
-        return window.requestAnimationFrame ||
-          window.webkitRequestAnimationFrame ||
-          window.mozRequestAnimationFrame ||
-          window.oRequestAnimationFrame ||
-          window.msRequestAnimationFrame ||
-          function (callback) {
-            return window.setTimeout(callback, 16.6666667);
-          };
-      })();
-      var canvas = document.getElementById("confetti-canvas");
-      if (canvas === null) {
-        canvas = document.createElement("canvas");
-        canvas.setAttribute("id", "confetti-canvas");
-        canvas.setAttribute("style", "display:block;z-index:999999;pointer-events:none;position:absolute;top:0;left:0");
-        document.body.appendChild(canvas);
-        canvas.width = width;
-        canvas.height = height;
-        window.addEventListener("resize", function () {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-        }, true);
-      }
-      var context = canvas.getContext("2d");
-      while (particles.length < maxParticleCount)
-        particles.push(resetParticle({}, width, height));
-      streamingConfetti = true;
-      if (animationTimer === null) {
-        (function runAnimation() {
-          context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-          if (particles.length === 0)
-            animationTimer = null;
-          else {
-            updateParticles();
-            drawParticles(context);
-            animationTimer = requestAnimFrame(runAnimation);
-          }
-        })();
-      }
-    }
-
-    function stopConfettiInner() {
-      streamingConfetti = false;
-    }
-
-    function removeConfettiInner() {
-      stopConfetti();
-      particles = [];
-    }
-
-    function toggleConfettiInner() {
-      if (streamingConfetti)
-        stopConfettiInner();
-      else
-        startConfettiInner();
-    }
-
-    function drawParticles(context) {
-      var particle;
-      var x;
-      for (var i = 0; i < particles.length; i++) {
-        particle = particles[i];
-        context.beginPath();
-        context.lineWidth = particle.diameter;
-        context.strokeStyle = particle.color;
-        context.shadowColor = 'rgba(0, 0, 0, .3)';
-        context.shadowBlur = 4;
-        context.shadowOffsetY = 2;
-        context.shadowOffsetX = 0;
-        x = particle.x + particle.tilt;
-        context.moveTo(x + particle.diameter / 2, particle.y);
-        context.lineTo(x, particle.y + particle.tilt + particle.diameter / 2);
-        context.stroke();
-      }
-    }
-
-    function updateParticles() {
-      var width = window.innerWidth;
-      var height = window.innerHeight;
-      var particle;
-      waveAngle += 0.01;
-      for (var i = 0; i < particles.length; i++) {
-        particle = particles[i];
-        if (!streamingConfetti && particle.y < -15)
-          particle.y = height + 100;
-        else {
-          particle.tiltAngle += particle.tiltAngleIncrement;
-          particle.x += Math.sin(waveAngle);
-          particle.y += (Math.cos(waveAngle) + particle.diameter + particleSpeed) * 0.5;
-          particle.tilt = Math.sin(particle.tiltAngle) * 15;
-        }
-        if (particle.x > width + 20 || particle.x < -20 || particle.y > height) {
-          if (streamingConfetti && particles.length <= maxParticleCount)
-            resetParticle(particle, width, height);
-          else {
-            particles.splice(i, 1);
-            i--;
-          }
-        }
-      }
-    }
-  })();
-
-  if (window !== top) {
-    alert("Hey, it looks like you're visiting our site through another website. Consider playing Multiplayer Piano directly at https://mppclone.com")
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   gClient.start();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// misc
-
-////////////////////////////////////////////////////////////////
-
-
-// non-ad-free experience
-/*(function() {
-  function adsOn() {
-    if(window.localStorage) {
-      var div = document.querySelector("#inclinations");
-      div.innerHTML = "Ads:<br>ON / <a id=\"adsoff\" href=\"#\">OFF</a>";
-      div.querySelector("#adsoff").addEventListener("click", adsOff);
-      localStorage.ads = true;
-    }
-    // adsterra
-    var script = document.createElement("script");
-    script.src = "//pl132070.puhtml.com/68/7a/97/687a978dd26d579c788cb41e352f5a41.js";
-    document.head.appendChild(script);
-  }
-
-  function adsOff() {
-    if(window.localStorage) localStorage.ads = false;
-    document.location.reload(true);
-  }
-
-  function noAds() {
-    var div = document.querySelector("#inclinations");
-    div.innerHTML = "Ads:<br><a id=\"adson\" href=\"#\">ON</a> / OFF";
-    div.querySelector("#adson").addEventListener("click", adsOn);
-  }
-
-  if(window.localStorage) {
-    if(localStorage.ads === undefined || localStorage.ads === "true")
-      adsOn();
-    else
-      noAds();
-  } else {
-    adsOn();
-  }
-})();*/

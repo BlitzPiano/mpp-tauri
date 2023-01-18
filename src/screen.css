@@ -1,54 +1,8 @@
-* {
-    image-rendering: pixelated;
-}
-
-* {
-    margin: 0;
-}
-
-* {
-    user-select: none;
-}
-
-body,html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    color: #fff;
-    text-shadow: #444 1px 1px;
-}
-
-body {
-    position: absolute;
-}
+@import url("/global.css");
 
 body {
     background: #3b5054;
     background: radial-gradient(ellipse at center,#ecfafd 0,#c5d5d8 100%);
-}
-
-a {
-    cursor: pointer;
-    color: #f46;
-    transition: color .25s;
-}
-
-a:hover {
-    color: #e05;
-    transition: color .25s;
-}
-
-.link {
-    text-decoration: underline;
-    cursor: pointer;
-    color: #fe0;
-}
-
-table {
-    border: 0;
-    padding: 0;
-    margin: 0;
 }
 
 #names {
@@ -56,9 +10,6 @@ table {
     top: 4px;
     left: 4px;
     font-size: 12px;
-    width: 90%;
-    width: -webkit-calc(100% - 105px);
-    width: -moz-calc(100% - 105px);
     width: calc(100% - 105px);
 }
 
@@ -886,7 +837,6 @@ input[type="range"]:hover {
 }
 
 .dialog {
-    background: #222;
     width: 400px;
     height: 100px;
     position: fixed;
@@ -899,41 +849,6 @@ input[type="range"]:hover {
     overflow: hidden;
     border-radius: 4px;
     box-shadow: 0 0 8px #000;
-}
-
-.dialog p {
-    margin: 10px;
-    font-size: 20px;
-}
-
-.dialog input.text {
-    font-size: 20px;
-    height: 20px;
-    width: 75%;
-}
-
-.dialog input.checkbox {
-    margin: 0 5px;
-}
-
-.dialog .submit {
-    background: #fe4;
-    border: none;
-    padding: 7px 40px 20px 30px;
-    font-size: 20px;
-    color: #000;
-    text-shadow: #444 2px 2px 2px;
-    border-radius: 4px;
-    box-shadow: inset 0 0 4px #000;
-    transition: all .25s;
-    position: absolute;
-    bottom: -10px;
-    right: -10px;
-}
-
-.dialog .submit:hover {
-    background: #ff8;
-    transition: all .25s;
 }
 
 #room-settings {
@@ -961,46 +876,6 @@ input[type="range"]:hover {
     height: 300px;
     margin-top: -150px;
     overflow: hidden;
-}
-
-#client-settings div {
-    float: left;
-    margin-left: 2px;
-}
-
-.client-settings-tablink {
-    font-size: 16px;
-}
-
-.client-settings-tablink.active {
-    background-color: rgb(69, 69, 69);
-}
-
-.client-settings-button {
-    height: 14px;
-    font-size: 18px;
-    background: #111;
-    border: 1px solid #444;
-    padding: 6px;
-    cursor: pointer;
-    line-height: 12px;
-    width: 84px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-align: center;
-}
-
-/* .client-settings-button:hover {
-    background: #222;
-} */
-
-.client-settings-button.stuck {
-    background: rgba(204,187,170,.35);
-}
-
-#client-settings-content {
-    float: unset !important;
-    font-size: 12px;
 }
 
 .logged-in-text {
@@ -1336,8 +1211,6 @@ input[type="range"]:hover {
     cursor: pointer;
     line-height: 12px;
     border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
     overflow: hidden;
     white-space: nowrap;
     color: #fff;
@@ -1381,14 +1254,6 @@ input[type="range"]:hover {
     right: 6px;
     top: 32px;
     z-index: 200;
-}
-
-code {
-    background: #222;
-    border-radius: 4px;
-    color: #eee;
-    padding: 2px;
-    text-shadow: none;
 }
 
 @keyframes spin {

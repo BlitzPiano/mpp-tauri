@@ -2,11 +2,6 @@ const { appWindow } = window.__TAURI__.window
 
 class Client extends EventEmitter {
   constructor(uri) {
-    if (window.MPP && MPP.client) {
-      throw new Error(
-        "Running multiple clients in a single tab is not allowed due to abuse. Attempting to bypass this may result in an auto-ban!"
-      )
-    }
     super()
 
     this.uri = uri
@@ -36,15 +31,15 @@ class Client extends EventEmitter {
   }
 
   isSupported() {
-    return typeof WebSocket === "function"
+    return true
   }
 
   isConnected() {
-    return this.isSupported() && this.ws && this.ws.readyState === WebSocket.OPEN
+    return this.ws && this.ws.readyState === WebSocket.OPEN
   }
 
   isConnecting() {
-    return this.isSupported() && this.ws && this.ws.readyState === WebSocket.CONNECTING
+    return this.ws && this.ws.readyState === WebSocket.CONNECTING
   }
 
   start() {
@@ -60,114 +55,111 @@ class Client extends EventEmitter {
   }
 
   connect() {
-    if (!this.canConnect || !this.isSupported() || this.isConnected() || this.isConnecting()) return
+    if (!this.canConnect || this.isConnected() || this.isConnecting()) return
     this.emit("status", "Connecting...")
     appWindow.setTitle(`Connecting to ${new URL(this.uri).hostname}`)
     this.ws = new WebSocket(this.uri)
 
-    var self = this
-    this.ws.addEventListener("close", function (evt) {
-      self.user = undefined
-      self.participantId = undefined
-      self.channel = undefined
-      self.setParticipants([])
-      clearInterval(self.pingInterval)
-      clearInterval(self.noteFlushInterval)
+    this.ws.addEventListener("close", (evt) => {
+      this.user = undefined
+      this.participantId = undefined
+      this.channel = undefined
+      this.setParticipants([])
+      clearInterval(this.pingInterval)
+      clearInterval(this.noteFlushInterval)
 
-      self.emit("disconnect", evt)
-      self.emit("status", "Offline mode")
+      this.emit("disconnect", evt)
+      this.emit("status", "Offline mode")
       appWindow.setTitle("Disconnected")
 
       // reconnect!
-      if (self.connectionTime) {
-        self.connectionTime = undefined
-        self.connectionAttempts = 0
+      if (this.connectionTime) {
+        this.connectionTime = undefined
+        this.connectionAttempts = 0
       } else {
-        ++self.connectionAttempts
+        ++this.connectionAttempts
       }
-      var ms_lut = [50, 2500, 10000]
-      var idx = self.connectionAttempts
+      const ms_lut = [50, 2500, 10000]
+      let idx = this.connectionAttempts
       if (idx >= ms_lut.length) idx = ms_lut.length - 1
-      var ms = ms_lut[idx]
-      setTimeout(self.connect.bind(self), ms)
+      setTimeout(this.connect.bind(this), ms_lut[idx])
     })
-    this.ws.addEventListener("error", function (err) {
-      self.emit("wserror", err)
-      self.ws.close() // self.ws.emit("close");
+    this.ws.addEventListener("error", (err) => {
+      this.emit("wserror", err)
+      this.ws.close() // this.ws.emit("close");
     })
-    this.ws.addEventListener("open", function (evt) {
-      self.pingInterval = setInterval(function () {
-        self.sendPing()
+    this.ws.addEventListener("open", (evt) => {
+      this.pingInterval = setInterval(() => {
+        this.sendPing()
       }, 20000)
-      self.noteBuffer = []
-      self.noteBufferTime = 0
-      self.noteFlushInterval = setInterval(function () {
-        if (self.noteBufferTime && self.noteBuffer.length > 0) {
-          self.sendArray([{ m: "n", t: self.noteBufferTime + self.serverTimeOffset, n: self.noteBuffer }])
-          self.noteBufferTime = 0
-          self.noteBuffer = []
+      this.noteBuffer = []
+      this.noteBufferTime = 0
+      this.noteFlushInterval = setInterval(() => {
+        if (this.noteBufferTime && this.noteBuffer.length > 0) {
+          this.sendArray([{ m: "n", t: this.noteBufferTime + this.serverTimeOffset, n: this.noteBuffer }])
+          this.noteBufferTime = 0
+          this.noteBuffer = []
         }
       }, 200)
 
-      self.emit("connect")
-      self.emit("status", "Joining channel...")
+      this.emit("connect")
+      this.emit("status", "Joining channel...")
     })
-    this.ws.addEventListener("message", async function (evt) {
+    this.ws.addEventListener("message", async (evt) => {
       const transmission = JSON.parse(evt.data)
       for (let i = 0; i < transmission.length; i++) {
         const msg = transmission[i]
-        self.emit(msg.m, msg)
+        this.emit(msg.m, msg)
       }
     })
   }
 
   bindEventListeners() {
-    var self = this
-    this.on("hi", function (msg) {
-      self.connectionTime = Date.now()
-      self.user = msg.u
-      self.receiveServerTime(msg.t, msg.e || undefined)
-      if (self.desiredChannelId) {
-        self.setChannel()
+    this.on("hi", (msg) => {
+      this.connectionTime = Date.now()
+      this.user = msg.u
+      this.receiveServerTime(msg.t, msg.e || undefined)
+      if (this.desiredChannelId) {
+        this.setChannel()
       }
       if (msg.token) localStorage.token = msg.token
       if (msg.permissions) {
-        self.permissions = msg.permissions
+        this.permissions = msg.permissions
       } else {
-        self.permissions = {}
+        this.permissions = {}
       }
       if (msg.accountInfo) {
-        self.accountInfo = msg.accountInfo
+        this.accountInfo = msg.accountInfo
       } else {
-        self.accountInfo = undefined
+        this.accountInfo = undefined
       }
     })
-    this.on("t", function (msg) {
-      self.receiveServerTime(msg.t, msg.e || undefined)
+    this.on("t", (msg) => {
+      this.receiveServerTime(msg.t, msg.e || undefined)
     })
-    this.on("ch", function (msg) {
-      self.desiredChannelId = msg.ch._id
-      self.desiredChannelSettings = msg.ch.settings
-      self.channel = msg.ch
-      if (msg.p) self.participantId = msg.p
-      self.setParticipants(msg.ppl)
+    this.on("ch", (msg) => {
+      this.desiredChannelId = msg.ch._id
+      this.desiredChannelSettings = msg.ch.settings
+      this.channel = msg.ch
+      if (msg.p) this.participantId = msg.p
+      this.setParticipants(msg.ppl)
       appWindow.setTitle(`${new URL(this.uri).hostname} - ${msg.ch.id}`)
     })
-    this.on("p", function (msg) {
-      self.participantUpdate(msg)
-      self.emit("participant update", self.findParticipantById(msg.id))
+    this.on("p", (msg) => {
+      this.participantUpdate(msg)
+      this.emit("participant update", this.findParticipantById(msg.id))
     })
-    this.on("m", function (msg) {
-      if (self.ppl.hasOwnProperty(msg.id)) {
-        self.participantMoveMouse(msg)
+    this.on("m", (msg) => {
+      if (this.ppl.hasOwnProperty(msg.id)) {
+        this.participantMoveMouse(msg)
       }
     })
-    this.on("bye", function (msg) {
-      self.removeParticipant(msg.p)
+    this.on("bye", (msg) => {
+      this.removeParticipant(msg.p)
     })
-    this.on("b", function (msg) {
+    this.on("b", (msg) => {
       const hiMsg = { m: "hi" }
-      hiMsg["🐈"] = self["🐈"]++ || undefined
+      hiMsg["🐈"] = this["🐈"]++ || undefined
       if (this.loginInfo) hiMsg.login = this.loginInfo
       this.loginInfo = undefined
       try {
@@ -182,7 +174,7 @@ class Client extends EventEmitter {
       if (localStorage.token) {
         hiMsg.token = localStorage.token
       }
-      self.sendArray([hiMsg])
+      this.sendArray([hiMsg])
     })
   }
 
@@ -313,30 +305,21 @@ class Client extends EventEmitter {
   }
 
   receiveServerTime(time, echo) {
-    var self = this
-    var now = Date.now()
-    var target = time - now
-    // console.log("Target serverTimeOffset: " + target);
-    var duration = 1000
-    var step = 0
-    var steps = 50
-    var step_ms = duration / steps
-    var difference = target - this.serverTimeOffset
-    var inc = difference / steps
-    var iv
-    iv = setInterval(function () {
-      self.serverTimeOffset += inc
+    const target = time - Date.now()
+    const duration = 1000
+    let step = 0
+    const steps = 50
+    const step_ms = duration / steps
+    const difference = target - this.serverTimeOffset
+    const inc = difference / steps
+
+    const iv = setInterval(() => {
+      this.serverTimeOffset += inc
       if (++step >= steps) {
         clearInterval(iv)
-        // console.log("serverTimeOffset reached: " + self.serverTimeOffset);
-        self.serverTimeOffset = target
+        this.serverTimeOffset = target
       }
     }, step_ms)
-    // smoothen
-
-    // this.serverTimeOffset = time - now;            // mostly time zone offset ... also the lags so todo smoothen this
-    // not smooth:
-    // if(echo) this.serverTimeOffset += echo - now;    // mostly round trip time offset
   }
 
   startNote(note, vel) {
@@ -372,5 +355,3 @@ class Client extends EventEmitter {
     this.loginInfo = loginInfo
   }
 }
-
-this.Client = Client
