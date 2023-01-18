@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use tauri::{Manager, Runtime, WindowBuilder};
+use tauri::{Manager, Runtime};
 
 fn open_settings_window<R: Runtime>(manager: &impl Manager<R>) {
     if manager.get_window("settings").is_some() {
@@ -15,6 +15,7 @@ fn open_settings_window<R: Runtime>(manager: &impl Manager<R>) {
         "settings",
         tauri::WindowUrl::App("settings/".into()),
     )
+    .title("Settings")
     .build()
     .unwrap();
 }

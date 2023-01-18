@@ -416,7 +416,7 @@ $(function () {
     static isSupported() {
       return true
     }
-    
+
     static translateMouseEvent(evt) {
       var element = evt.target
       var offx = 0
@@ -452,7 +452,7 @@ $(function () {
       $(piano.rootElement).mousedown(function (event) {
         mouse_down = true
         //event.stopPropagation();
-        if (!gNoPreventDefault) event.preventDefault()
+        if (!gSettings.noPreventDefault) event.preventDefault()
 
         var pos = CanvasRenderer.translateMouseEvent(event)
         var hit = self.getHit(pos.x, pos.y)
@@ -466,7 +466,7 @@ $(function () {
         function (event) {
           mouse_down = true
           //event.stopPropagation();
-          if (!gNoPreventDefault) event.preventDefault()
+          if (!gSettings.noPreventDefault) event.preventDefault()
           for (var i in event.changedTouches) {
             var pos = CanvasRenderer.translateMouseEvent(event.changedTouches[i])
             var hit = self.getHit(pos.x, pos.y)
@@ -690,7 +690,7 @@ $(function () {
           if (sharp) keyName += "#"
           keyName += key.octave + 1
 
-          if (gShowPianoNotes) {
+          if (gSettings.showPianoNotes) {
             this.ctx.font = `${(key.sharp ? this.blackKeyWidth : this.whiteKeyWidth) / 2}px Arial`
             this.ctx.fillStyle = key.sharp ? "white" : "black"
             this.ctx.textAlign = "center"
@@ -717,7 +717,7 @@ $(function () {
             )
           }
 
-          const highlightScale = BASIC_PIANO_SCALES[gHighlightScaleNotes]
+          const highlightScale = BASIC_PIANO_SCALES[gSettings.highlightScaleNotes]
           if (highlightScale && key.loaded) {
             keyName = keyName.replace("C#", "D♭")
             keyName = keyName.replace("D#", "E♭")
@@ -1143,7 +1143,7 @@ $(function () {
       setupParticipantDivs(part)
 
       // add cursorDiv
-      if ((gClient.participantId !== part.id || gSeeOwnCursor) && !gCursorHides.includes(part.id) && !gHideAllCursors) {
+      if ((gClient.participantId !== part.id || gSeeOwnCursor) && !gSettings.cursorHides.includes(part.id) && !gSettings.hideAllCursors) {
         var div = document.createElement("div")
         div.className = "cursor"
         div.style.display = "none"
@@ -1201,12 +1201,12 @@ $(function () {
         $(part.nameDiv).removeClass("owner")
         $(part.cursorDiv).removeClass("owner")
       }
-      if (gPianoMutes.indexOf(part._id) !== -1) {
+      if (gSettings.pianoMutes.indexOf(part._id) !== -1) {
         $(part.nameDiv).addClass("muted-notes")
       } else {
         $(part.nameDiv).removeClass("muted-notes")
       }
-      if (gChatMutes.indexOf(part._id) !== -1) {
+      if (gSettings.chatMutes.indexOf(part._id) !== -1) {
         $(part.nameDiv).addClass("muted-chat")
       } else {
         $(part.nameDiv).removeClass("muted-chat")
@@ -1224,7 +1224,7 @@ $(function () {
     function updateCursor(msg) {
       const part = gClient.ppl[msg.id]
       if (part && part.cursorDiv) {
-        if (gSmoothCursor) {
+        if (gSettings.smoothCursor) {
           part.cursorDiv.style.transform = "translate3d(" + msg.x + "vw, " + msg.y + "vh, 0)"
         } else {
           part.cursorDiv.style.left = msg.x + "%"
@@ -1290,7 +1290,7 @@ $(function () {
   gClient.on("n", function (msg) {
     var t = msg.t - gClient.serverTimeOffset + TIMING_TARGET - Date.now()
     var participant = gClient.findParticipantById(msg.p)
-    if (gPianoMutes.indexOf(participant._id) !== -1) return
+    if (gSettings.pianoMutes.indexOf(participant._id) !== -1) return
     for (var i = 0; i < msg.n.length; i++) {
       var note = msg.n[i]
       var ms = t + (note.d || 0)
@@ -1472,47 +1472,6 @@ $(function () {
     $("#room-notice").fadeOut(1000)
   })
 
-  var gPianoMutes = (localStorage.pianoMutes ? localStorage.pianoMutes : "").split(",").filter((v) => v)
-  var gChatMutes = (localStorage.chatMutes ? localStorage.chatMutes : "").split(",").filter((v) => v)
-  var gShowIdsInChat = localStorage.showIdsInChat == "true"
-  var gShowTimestampsInChat = localStorage.showTimestampsInChat == "true"
-  var gNoChatColors = localStorage.noChatColors == "true"
-  var gNoBackgroundColor = localStorage.noBackgroundColor == "true"
-  var gOutputOwnNotes = localStorage.outputOwnNotes ? localStorage.outputOwnNotes == "true" : true
-  var gVirtualPianoLayout = localStorage.virtualPianoLayout == "true"
-  var gSmoothCursor = localStorage.smoothCursor == "true"
-  var gShowChatTooltips = localStorage.showChatTooltips ? localStorage.showChatTooltips == "true" : true
-  var gShowPianoNotes = localStorage.showPianoNotes == "true"
-  var gHighlightScaleNotes = localStorage.highlightScaleNotes
-  var gCursorHides = (localStorage.cursorHides ? localStorage.cursorHides : "").split(",").filter((v) => v)
-  var gHideAllCursors = localStorage.hideAllCursors == "true"
-  var gHidePiano = localStorage.hidePiano == "true"
-  var gHideChat = localStorage.hideChat == "true"
-  var gNoPreventDefault = localStorage.noPreventDefault == "true"
-  //   var gWarnOnLinks = localStorage.warnOnLinks ? loalStorage.warnOnLinks == "true" : true;
-
-  // Hide piano attribute
-  if (gHidePiano) {
-    $("#piano").hide()
-  } else {
-    $("#piano").show()
-  }
-
-  // Hide chat attribute
-  if (gHideChat) {
-    $("#chat").hide()
-  } else {
-    $("#chat").show()
-  }
-
-  // smooth cursor attribute
-
-  if (gSmoothCursor) {
-    $("#cursors").attr("smooth-cursors", "")
-  } else {
-    $("#cursors").removeAttr("smooth-cursors")
-  }
-
   // Background color
   ;(function () {
     var old_color1 = new Color("#000000")
@@ -1566,7 +1525,7 @@ $(function () {
     setColorToDefault()
 
     gClient.on("ch", function (ch) {
-      if (gNoBackgroundColor) {
+      if (gSettings.noBackgroundColor) {
         setColorToDefault()
         return
       }
@@ -1590,9 +1549,11 @@ $(function () {
     $("#volume-label").text("Volume: " + Math.floor(v * 100) + "%")
   })
 
-  var Note = function (note, octave) {
-    this.note = note
-    this.octave = octave || 0
+  class Note {
+    constructor(note, octave) {
+      this.note = note
+      this.octave = octave || 0
+    }
   }
 
   var n = function (a, b) {
@@ -1692,7 +1653,7 @@ $(function () {
     },
   }
 
-  var key_binding = gVirtualPianoLayout ? layouts.VP : layouts.MPP
+  var key_binding
   var capsLockKey = false
   var transpose = 0
 
@@ -1707,14 +1668,14 @@ $(function () {
 
         var note = binding.note
         var octave = 1 + note.octave
-        if (!gVirtualPianoLayout) {
+        if (!gSettings.virtualPianoLayout) {
           if (evt.shiftKey) ++octave
           else if (capsLockKey || evt.ctrlKey) --octave
           else if (evt.altKey) octave += 2
         }
         note = note.note + octave
         var index = Object.keys(gPiano.keys).indexOf(note)
-        if (gVirtualPianoLayout && evt.shiftKey) {
+        if (gSettings.virtualPianoLayout && evt.shiftKey) {
           note = Object.keys(gPiano.keys)[index + transpose + 1]
         } else note = Object.keys(gPiano.keys)[index + transpose]
         if (note === undefined) return
@@ -1729,17 +1690,17 @@ $(function () {
         if (window.gKnowsYouCanUseKeyboardNotification) gKnowsYouCanUseKeyboardNotification.close()
       }
 
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
       evt.stopPropagation()
       return false
     } else if (code == 20) {
       // Caps Lock
       capsLockKey = true
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
     } else if (code === 0x20) {
       // Space Bar
       pressSustain()
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
     } else if (code === 38 && transpose <= 100) {
       transpose += 12
       sendTransposeNotif()
@@ -1754,11 +1715,11 @@ $(function () {
       sendTransposeNotif()
     } else if (code == 9) {
       // Tab (don't tab away from the piano)
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
     } else if (code == 8) {
       // Backspace (don't navigate Back)
       gAutoSustain = !gAutoSustain
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
     }
   }
 
@@ -1781,37 +1742,37 @@ $(function () {
 
         var note = binding.note
         var octave = 1 + note.octave
-        if (!gVirtualPianoLayout) {
+        if (!gSettings.virtualPianoLayout) {
           if (evt.shiftKey) ++octave
           else if (capsLockKey || evt.ctrlKey) --octave
           else if (evt.altKey) octave += 2
         }
         note = note.note + octave
         var index = Object.keys(gPiano.keys).indexOf(note)
-        if (gVirtualPianoLayout && evt.shiftKey) {
+        if (gSettings.virtualPianoLayout && evt.shiftKey) {
           note = Object.keys(gPiano.keys)[index + transpose + 1]
         } else note = Object.keys(gPiano.keys)[index + transpose]
         if (note === undefined) return
         release(note)
       }
 
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
       evt.stopPropagation()
       return false
     } else if (code == 20) {
       // Caps Lock
       capsLockKey = false
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
     } else if (code === 0x20) {
       // Space Bar
       releaseSustain()
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
     }
   }
 
   function handleKeyPress(evt) {
     if (evt.target.type) return
-    if (!gNoPreventDefault) evt.preventDefault()
+    if (!gSettings.noPreventDefault) evt.preventDefault()
     evt.stopPropagation()
     if (evt.keyCode == 27 || evt.keyCode == 13) {
       //$("#chat input").focus();
@@ -1852,6 +1813,45 @@ $(function () {
   var velocityFromMouseY = function () {
     return 0.1 + (my / 100) * 0.6
   }
+
+  var gSettings = new SettingsManager()
+  gSettings.on("hidePiano", (h) => h ? $("#piano").hide() : $("#piano").show())
+  gSettings.on("hideChat", (h) => h ? $("#chat").hide() : $("#chat").show())
+  gSettings.on("smoothCursor", (s) => {
+    if (s) {
+      $("#cursors").attr("smooth-cursors", "")
+      for (const participant of Object.values(gClient.ppl)) {
+        if (participant.cursorDiv) {
+          participant.cursorDiv.style.left = ""
+          participant.cursorDiv.style.top = ""
+          participant.cursorDiv.style.transform =
+            "translate3d(" + participant.x + "vw, " + participant.y + "vh, 0)"
+        }
+      }
+    } else {
+      $("#cursors").removeAttr("smooth-cursors")
+      for (const participant of Object.values(gClient.ppl)) {
+        if (participant.cursorDiv) {
+          participant.cursorDiv.style.left = participant.x + "%"
+          participant.cursorDiv.style.top = participant.y + "%"
+          participant.cursorDiv.style.transform = ""
+        }
+      }
+    }
+  })
+  gSettings.on("virtualPianoLayout", (l) => key_binding = l ? layouts.VP : layouts.MPP)
+  gSettings.on("hideAllCursors", (h) => h ? $("#cursors").hide() : $("#cursors").show())
+
+  // Events above will be executed on page load
+  gSettings.emitAll()
+
+  gSettings.on("noBackgroundColor", (b) => {
+    if (gClient.channel.settings.color && !b) {
+      setBackgroundColor(gClient.channel.settings.color, gClient.channel.settings.color2)
+    } else {
+      setBackgroundColorToDefault()
+    }
+  })
 
   // NoteQuota
   var gNoteQuota = (function () {
@@ -1960,63 +1960,52 @@ $(function () {
           evt.target.innerText = "Copied!"
         })
       // add menu items
-      if (gPianoMutes.indexOf(part._id) == -1) {
+      if (gSettings.pianoMutes.indexOf(part._id) == -1) {
         $('<div class="menu-item">Mute Notes</div>')
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
-            gPianoMutes.push(part._id)
-            if (localStorage) localStorage.pianoMutes = gPianoMutes.join(",")
+            gSettings.pianoMutes = gSettings.pianoMutes.concat(part._id)
             $(part.nameDiv).addClass("muted-notes")
           })
       } else {
         $('<div class="menu-item">Unmute Notes</div>')
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
-            var i
-            while ((i = gPianoMutes.indexOf(part._id)) != -1) gPianoMutes.splice(i, 1)
-            if (localStorage) localStorage.pianoMutes = gPianoMutes.join(",")
+            gSettings.pianoMutes = gSettings.pianoMutes.filter((v) => v != part._id)
             $(part.nameDiv).removeClass("muted-notes")
           })
       }
-      if (gChatMutes.indexOf(part._id) == -1) {
+      if (gSettings.chatMutes.indexOf(part._id) == -1) {
         $('<div class="menu-item">Mute Chat</div>')
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
-            gChatMutes.push(part._id)
-            if (localStorage) localStorage.chatMutes = gChatMutes.join(",")
+            gSettings.chatMutes = gSettings.chatMutes.concat(part._id)
             $(part.nameDiv).addClass("muted-chat")
           })
       } else {
         $('<div class="menu-item">Unmute Chat</div>')
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
-            var i
-            while ((i = gChatMutes.indexOf(part._id)) != -1) gChatMutes.splice(i, 1)
-            if (localStorage) localStorage.chatMutes = gChatMutes.join(",")
+            gSettings.chatMutes = gSettings.chatMutes.find((v) => v != part._id)
             $(part.nameDiv).removeClass("muted-chat")
           })
       }
-      if (!(gPianoMutes.indexOf(part._id) >= 0) || !(gChatMutes.indexOf(part._id) >= 0)) {
+      if (!(gSettings.pianoMutes.indexOf(part._id) >= 0) || !(gSettings.chatMutes.indexOf(part._id) >= 0)) {
         $('<div class="menu-item">Mute Completely</div>')
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
-            gPianoMutes.push(part._id)
-            if (localStorage) localStorage.pianoMutes = gPianoMutes.join(",")
-            gChatMutes.push(part._id)
-            if (localStorage) localStorage.chatMutes = gChatMutes.join(",")
+            gSettings.pianoMutes = gSettings.pianoMutes.concat(part._id)
+            gSettings.chatMutes = gSettings.chatMutes.concat(part._id)
             $(part.nameDiv).addClass("muted-notes")
             $(part.nameDiv).addClass("muted-chat")
           })
       }
-      if (gPianoMutes.indexOf(part._id) >= 0 || gChatMutes.indexOf(part._id) >= 0) {
+      if (gSettings.pianoMutes.indexOf(part._id) >= 0 || gSettings.chatMutes.indexOf(part._id) >= 0) {
         $('<div class="menu-item">Unmute Completely</div>')
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
-            var i
-            while ((i = gPianoMutes.indexOf(part._id)) != -1) gPianoMutes.splice(i, 1)
-            while ((i = gChatMutes.indexOf(part._id)) != -1) gChatMutes.splice(i, 1)
-            if (localStorage) localStorage.pianoMutes = gPianoMutes.join(",")
-            if (localStorage) localStorage.chatMutes = gChatMutes.join(",")
+            gSettings.pianoMutes = gSettings.pianoMutes.filter((v) => v != part._id)
+            gSettings.chatMutes = gSettings.chatMutes.find((v) => v != part._id)
             $(part.nameDiv).removeClass("muted-notes")
             $(part.nameDiv).removeClass("muted-chat")
           })
@@ -2047,12 +2036,11 @@ $(function () {
             $("#chat-input")[0].placeholder = "Direct messaging " + part.name + "."
           })
       }
-      if (gCursorHides.indexOf(part._id) == -1) {
+      if (gSettings.cursorHides.indexOf(part._id) == -1) {
         $('<div class="menu-item">Hide Cursor</div>')
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
-            gCursorHides.push(part._id)
-            if (localStorage) localStorage.cursorHides = gCursorHides.join(",")
+            gSettings.cursorHides = gSettings.cursorHides.concat(part._id)
             $(part.cursorDiv).hide()
           })
       } else {
@@ -2060,8 +2048,7 @@ $(function () {
           .appendTo(menu)
           .on("mousedown touchstart", function (evt) {
             var i
-            while ((i = gCursorHides.indexOf(part._id)) != -1) gCursorHides.splice(i, 1)
-            if (localStorage) localStorage.cursorHides = gCursorHides.join(",")
+            gSettings.cursorHides = gSettings.cursorHides.filter((v) => v != part._id)
             $(part.cursorDiv).show()
           })
       }
@@ -2368,7 +2355,7 @@ $(function () {
   function modalHandleEsc(evt) {
     if (evt.keyCode == 27) {
       closeModal()
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
       evt.stopPropagation()
     }
   }
@@ -2434,7 +2421,7 @@ $(function () {
       } else {
         return
       }
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
       evt.stopPropagation()
       return false
     })
@@ -2518,7 +2505,7 @@ $(function () {
       } else {
         return
       }
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
       evt.stopPropagation()
       return false
     })
@@ -2629,7 +2616,7 @@ $(function () {
       } else {
         return
       }
-      if (!gNoPreventDefault) evt.preventDefault()
+      if (!gSettings.noPreventDefault) evt.preventDefault()
       evt.stopPropagation()
       return false
     }
@@ -2714,7 +2701,7 @@ $(function () {
       if ($("#chat").hasClass("chatting")) {
         if (evt.keyCode == 27) {
           chat.blur()
-          if (!gNoPreventDefault) evt.preventDefault()
+          if (!gSettings.noPreventDefault) evt.preventDefault()
           evt.stopPropagation()
         } else if (evt.keyCode == 13) {
           $("#chat input").focus()
@@ -2743,14 +2730,14 @@ $(function () {
             }, 100)
           }
         }
-        if (!gNoPreventDefault) evt.preventDefault()
+        if (!gSettings.noPreventDefault) evt.preventDefault()
         evt.stopPropagation()
       } else if (evt.keyCode == 27) {
         chat.blur()
-        if (!gNoPreventDefault) evt.preventDefault()
+        if (!gSettings.noPreventDefault) evt.preventDefault()
         evt.stopPropagation()
       } else if (evt.keyCode == 9) {
-        if (!gNoPreventDefault) evt.preventDefault()
+        if (!gSettings.noPreventDefault) evt.preventDefault()
         evt.stopPropagation()
       }
     })
@@ -2814,9 +2801,9 @@ $(function () {
 
       receive: function (msg) {
         if (msg.m === "dm") {
-          if (gChatMutes.indexOf(msg.sender._id) != -1) return
+          if (gSettings.chatMutes.indexOf(msg.sender._id) != -1) return
         } else {
-          if (gChatMutes.indexOf(msg.p._id) != -1) return
+          if (gSettings.chatMutes.indexOf(msg.p._id) != -1) return
         }
 
         //construct string for creating list element
@@ -2825,7 +2812,7 @@ $(function () {
 
         var isSpecialDm = false
 
-        if (gShowTimestampsInChat) liString += '<span class="timestamp"/>'
+        if (gSettings.showTimestampsInChat) liString += '<span class="timestamp"/>'
 
         if (msg.m === "dm") {
           if (msg.sender._id === gClient.user._id) {
@@ -2842,12 +2829,12 @@ $(function () {
         }
 
         if (isSpecialDm) {
-          if (gShowIdsInChat) liString += '<span class="id"/>'
+          if (gSettings.showIdsInChat) liString += '<span class="id"/>'
           liString += '<span class="name"/><span class="dmArrow"/>'
-          if (gShowIdsInChat) liString += '<span class="id2"/>'
+          if (gSettings.showIdsInChat) liString += '<span class="id2"/>'
           liString += '<span class="name2"/><span class="message"/>'
         } else {
-          if (gShowIdsInChat) liString += '<span class="id"/>'
+          if (gSettings.showIdsInChat) liString += '<span class="id"/>'
           liString += '<span class="name"/><span class="message"/>'
         }
 
@@ -2873,7 +2860,7 @@ $(function () {
           }
         }
 
-        if (gShowTimestampsInChat) {
+        if (gSettings.showTimestampsInChat) {
           li.find(".timestamp").text(new Date(msg.t).toLocaleTimeString())
         }
 
@@ -2898,8 +2885,8 @@ $(function () {
         li.find(".message").html(marked.parseInline(message))
 
         if (msg.m === "dm") {
-          if (!gNoChatColors) li.find(".message").css("color", msg.sender.color || "white")
-          if (gShowIdsInChat) {
+          if (!gSettings.noChatColors) li.find(".message").css("color", msg.sender.color || "white")
+          if (gSettings.showIdsInChat) {
             if (msg.sender._id === gClient.user._id) {
               li.find(".id").text(msg.recipient._id.substring(0, 6))
             } else {
@@ -2909,37 +2896,37 @@ $(function () {
 
           if (msg.sender._id === gClient.user._id) {
             //sent dm
-            if (!gNoChatColors) li.find(".name").css("color", msg.recipient.color || "white")
+            if (!gSettings.noChatColors) li.find(".name").css("color", msg.recipient.color || "white")
             li.find(".name").text(msg.recipient.name + ":")
-            if (gShowChatTooltips) li[0].title = msg.recipient._id
+            if (gSettings.showChatTooltips) li[0].title = msg.recipient._id
           } else if (msg.recipient._id === gClient.user._id) {
             //received dm
-            if (!gNoChatColors) li.find(".name").css("color", msg.sender.color || "white")
+            if (!gSettings.noChatColors) li.find(".name").css("color", msg.sender.color || "white")
             li.find(".name").text(msg.sender.name + ":")
 
-            if (gShowChatTooltips) li[0].title = msg.sender._id
+            if (gSettings.showChatTooltips) li[0].title = msg.sender._id
           } else {
             //someone else's dm
-            if (!gNoChatColors) li.find(".name").css("color", msg.sender.color || "white")
-            if (!gNoChatColors) li.find(".name2").css("color", msg.recipient.color || "white")
+            if (!gSettings.noChatColors) li.find(".name").css("color", msg.sender.color || "white")
+            if (!gSettings.noChatColors) li.find(".name2").css("color", msg.recipient.color || "white")
             li.find(".name").text(msg.sender.name)
             li.find(".name2").text(msg.recipient.name + ":")
 
-            if (gShowIdsInChat) li.find(".id").text(msg.sender._id.substring(0, 6))
-            if (gShowIdsInChat) li.find(".id2").text(msg.recipient._id.substring(0, 6))
+            if (gSettings.showIdsInChat) li.find(".id").text(msg.sender._id.substring(0, 6))
+            if (gSettings.showIdsInChat) li.find(".id2").text(msg.recipient._id.substring(0, 6))
 
-            if (gShowChatTooltips) li[0].title = msg.sender._id
+            if (gSettings.showChatTooltips) li[0].title = msg.sender._id
           }
         } else {
-          if (!gNoChatColors) li.find(".message").css("color", msg.p.color || "white")
-          if (!gNoChatColors) li.find(".name").css("color", msg.p.color || "white")
+          if (!gSettings.noChatColors) li.find(".message").css("color", msg.p.color || "white")
+          if (!gSettings.noChatColors) li.find(".name").css("color", msg.p.color || "white")
 
           li.find(".name").text(msg.p.name + ":")
 
-          if (!gNoChatColors) li.find(".message").css("color", msg.p.color || "white")
-          if (gShowIdsInChat) li.find(".id").text(msg.p._id.substring(0, 6))
+          if (!gSettings.noChatColors) li.find(".message").css("color", msg.p.color || "white")
+          if (gSettings.showIdsInChat) li.find(".id").text(msg.p._id.substring(0, 6))
 
-          if (gShowChatTooltips) li[0].title = msg.p._id
+          if (gSettings.showChatTooltips) li[0].title = msg.p._id
         }
 
         //put list element in chat
@@ -3110,7 +3097,7 @@ $(function () {
                 //console.log("output", output);
               }
               gMidiOutTest = function (note_name, vel, delay_ms, participantId) {
-                if (!gOutputOwnNotes && participantId === gClient.participantId) return
+                if (!gSettings.outputOwnNotes && participantId === gClient.participantId) return
                 var note_number = MIDI_KEY_NAMES.indexOf(note_name)
                 if (note_number == -1) return
                 note_number = note_number + 9 - MIDI_TRANSPOSE
@@ -3300,6 +3287,7 @@ $(function () {
     noteQuota: gNoteQuota,
     soundSelector: gSoundSelector,
     Notification: Notification,
+    settings: gSettings,
   }
 
   // synth
@@ -3343,7 +3331,7 @@ $(function () {
     }
   }
 
-(function () {
+  ;(function () {
     var button = document.getElementById("synth-btn")
     var notification
 
@@ -3492,496 +3480,164 @@ $(function () {
       })
     }
   })()
+
   ;(function () {
-    if (window.location.hostname === "multiplayerpiano.com") {
-      var button = document.getElementById("client-settings-btn")
-      var notification
+    const invoke = window.__TAURI__.invoke
 
-      button.addEventListener("click", function () {
-        if (notification) {
-          notification.close()
-        } else {
-          showSynth()
-        }
-      })
+    var button = document.getElementById("client-settings-btn")
+    var content = document.getElementById("client-settings-content")
+    var tablinks = document.getElementsByClassName("client-settings-tablink")
+    var okButton = document.getElementById("client-settings-ok-btn")
 
-      function showSynth() {
-        var html = document.createElement("div")
+    button.addEventListener("click", (evt) => {
+      evt.stopPropagation()
+      openModal("#client-settings")
+      invoke("open_settings")
+    })
 
-        // show ids in chat
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Show user IDs in chat"
-          if (gShowIdsInChat) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.showIdsInChat = setting.classList.contains("enabled")
-            gShowIdsInChat = setting.classList.contains("enabled")
-          }
-          html.appendChild(setting)
-        })()
+    okButton.addEventListener("click", (evt) => {
+      evt.stopPropagation()
+      closeModal()
+    })
 
-        // show timestamps in chat
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Timestamps in chat"
-          if (gShowTimestampsInChat) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.showTimestampsInChat = setting.classList.contains("enabled")
-            gShowTimestampsInChat = setting.classList.contains("enabled")
-          }
-          html.appendChild(setting)
-        })()
+    function createSetting(id, labelText, isChecked, addBr, html, onclickFunc) {
+      const setting = document.createElement("input")
+      setting.type = "checkbox"
+      setting.id = id
+      setting.checked = isChecked
+      setting.onclick = onclickFunc
 
-        // no chat colors
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "No chat colors"
-          if (gNoChatColors) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.noChatColors = setting.classList.contains("enabled")
-            gNoChatColors = setting.classList.contains("enabled")
-          }
-          html.appendChild(setting)
-        })()
+      const label = document.createElement("label")
+      label.innerText = labelText + ": "
 
-        // no background color
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Force dark background"
-          if (gNoBackgroundColor) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.noBackgroundColor = setting.classList.contains("enabled")
-            gNoBackgroundColor = setting.classList.contains("enabled")
-            if (gClient.channel.settings.color && !gNoBackgroundColor) {
-              setBackgroundColor(gClient.channel.settings.color, gClient.channel.settings.color2)
-            } else {
-              setBackgroundColorToDefault()
-            }
-          }
-          html.appendChild(setting)
-        })()
+      label.appendChild(setting)
+      html.appendChild(label)
+      if (addBr) html.appendChild(document.createElement("br"))
+    }
 
-        // output own notes
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Output own notes to MIDI"
-          if (gOutputOwnNotes) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.outputOwnNotes = setting.classList.contains("enabled")
-            gOutputOwnNotes = setting.classList.contains("enabled")
-          }
-          html.appendChild(setting)
-        })()
+    window.changeClientSettingsTab = (evt, tabName) => {
+      content.innerHTML = ""
 
-        // virtual piano layout
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Virtual Piano layout"
-          if (gVirtualPianoLayout) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.virtualPianoLayout = setting.classList.contains("enabled")
-            gVirtualPianoLayout = setting.classList.contains("enabled")
-            key_binding = gVirtualPianoLayout ? layouts.VP : layouts.MPP
-          }
-          html.appendChild(setting)
-        })()
+      for (let index = 0; index < tablinks.length; index++) {
+        tablinks[index].className = tablinks[index].className.replace(" active", "")
+      }
 
-        // 			gShowChatTooltips
-        // Show chat tooltips for _ids.
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Show _id tooltips"
-          if (gShowChatTooltips) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.showChatTooltips = setting.classList.contains("enabled")
-            gShowChatTooltips = setting.classList.contains("enabled")
-          }
-          html.appendChild(setting)
-        })()
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Show Piano Notes"
-          if (gShowPianoNotes) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.showPianoNotes = setting.classList.contains("enabled")
-            gShowPianoNotes = setting.classList.contains("enabled")
-          }
-          html.appendChild(setting)
-        })()
+      evt.currentTarget.className += " active"
 
-        // Enable smooth cursors.
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Enable smooth cursors"
-          if (gSmoothCursor) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.smoothCursor = setting.classList.contains("enabled")
-            gSmoothCursor = setting.classList.contains("enabled")
-            if (gSmoothCursor) {
-              $("#cursors").attr("smooth-cursors", "")
-            } else {
-              $("#cursors").removeAttr("smooth-cursors")
-            }
-            if (gSmoothCursor) {
-              Object.values(gClient.ppl).forEach(function (participant) {
-                if (participant.cursorDiv) {
-                  participant.cursorDiv.style.left = ""
-                  participant.cursorDiv.style.top = ""
-                  participant.cursorDiv.style.transform =
-                    "translate3d(" + participant.x + "vw, " + participant.y + "vh, 0)"
-                }
-              })
-            } else {
-              Object.values(gClient.ppl).forEach(function (participant) {
-                if (participant.cursorDiv) {
-                  participant.cursorDiv.style.left = participant.x + "%"
-                  participant.cursorDiv.style.top = participant.y + "%"
-                  participant.cursorDiv.style.transform = ""
-                }
-              })
-            }
-          }
-          html.appendChild(setting)
-        })()
-        ;(function () {
+      switch (tabName.toLowerCase()) {
+        case "chat":
+          var html = document.createElement("div")
+
+          createSetting("show-timestamps-in-chat", "Show timestamps in chat", gSettings.showTimestampsInChat, true, html, () => {
+            gSettings.showTimestampsInChat = !gSettings.showTimestampsInChat
+          })
+
+          createSetting("show-user-ids-in-chat", "Show user IDs in chat", gSettings.showIdsInChat, true, html, () => {
+            gSettings.showIdsInChat = !gSettings.showIdsInChat
+          })
+
+          createSetting("show-id-tooltips", "Show ID tooltips", gSettings.showChatTooltips, true, html, () => {
+            gSettings.showChatTooltips = !gSettings.showChatTooltips
+          })
+
+          createSetting("no-chat-colors", "No chat colors", gSettings.noChatColors, true, html, () => {
+            gSettings.noChatColors = !gSettings.noChatColors
+          })
+
+          createSetting("hide-chat", "Hide chat", gSettings.hideChat, false, html, () => {
+            gSettings.hideChat = !gSettings.hideChat
+          })
+
+          content.appendChild(html)
+          break
+
+        case "midi":
+          var html = document.createElement("div")
+
+          createSetting("output-own-notes-to-midi", "Output own notes to MIDI", gSettings.outputOwnNotes, false, html, () => {
+            gSettings.outputOwnNotes = !gSettings.outputOwnNotes
+          })
+
+          content.appendChild(html)
+          break
+
+        case "piano":
+          var html = document.createElement("div")
+
+          createSetting("virtual-piano-layout", "Virtual Piano layout", gSettings.virtualPianoLayout, true, html, () => {
+            gSettings.virtualPianoLayout = !gSettings.virtualPianoLayout
+          })
+
+          createSetting("show-piano-notes", "Show piano notes", gSettings.showPianoNotes, true, html, () => {
+            gSettings.showPianoNotes = !gSettings.showPianoNotes
+          })
+
+          createSetting("hide-piano", "Hide piano", gSettings.hidePiano, true, html, () => {
+            gSettings.hidePiano = !gSettings.hidePiano
+          })
+
           var setting = document.createElement("select")
           setting.classList = "setting"
-          setting.style = "color: inherit; width: calc(100% - 2px);"
+          setting.style = "width: calc(58.7% - 2px);"
+
+          setting.onchange = () => {
+            gSettings.highlightScaleNotes = setting.value
+          }
 
           const keys = Object.keys(BASIC_PIANO_SCALES) // lol
           const option = document.createElement("option")
-          option.value = option.innerText = "No highlighted notes"
-          option.selected = !gHighlightScaleNotes
+          option.value = option.innerText = "None"
+          option.selected = !gSettings.highlightScaleNotes
           setting.appendChild(option)
 
           for (const key of keys) {
             const option = document.createElement("option")
             option.value = key
             option.innerText = key
-            option.selected = key === gHighlightScaleNotes
+            option.selected = key === gSettings.highlightScaleNotes
             setting.appendChild(option)
           }
 
-          if (gHighlightScaleNotes) {
-            setting.value = gHighlightScaleNotes
+          if (gSettings.highlightScaleNotes) {
+            setting.value = gSettings.highlightScaleNotes
           }
 
-          setting.onchange = function () {
-            localStorage.highlightScaleNotes = setting.value
-            gHighlightScaleNotes = setting.value
-          }
+          var label = document.createElement("label")
+
+          label.setAttribute("for", setting.id)
+          label.innerText = "Highlighted notes: "
+
+          html.appendChild(label)
           html.appendChild(setting)
-        })()
-        ;(function () {
-          var setting = document.createElement("div")
-          setting.classList = "setting"
-          setting.innerText = "Hide all cursors"
-          if (gHideAllCursors) {
-            setting.classList.toggle("enabled")
-          }
-          setting.onclick = function () {
-            setting.classList.toggle("enabled")
-            localStorage.hideAllCursors = setting.classList.contains("enabled")
-            gHideAllCursors = setting.classList.contains("enabled")
-            if (gHideAllCursors) {
-              $("#cursors").hide()
-            } else {
-              $("#cursors").show()
-            }
-          }
-          html.appendChild(setting)
-        })()
 
-        // warn on links
-        /*(function() {
-          var setting = document.createElement("div");
-            setting.classList = "setting";
-            setting.innerText = "Warn when clicking links";
-            if (gWarnOnLinks) {
-                      setting.classList.toggle("enabled");
-            }
-            setting.onclick = function() {
-              setting.classList.toggle("enabled");
-              localStorage.warnOnLinks = setting.classList.contains("enabled");
-              gWarnOnLinks = setting.classList.contains("enabled");
-            };
-          html.appendChild(setting);
-        })();*/
+          content.appendChild(html)
+          break
 
-        //useless blank space
-        //var div = document.createElement("div");
-        //div.innerHTML = "<br><br><br><br><center>this space intentionally left blank</center><br><br><br><br>";
-        //html.appendChild(div);
+        case "misc":
+          var html = document.createElement("div")
 
-        // notification
-        notification = new Notification({
-          title: "Client Settings",
-          html: html,
-          duration: -1,
-          target: "#client-settings-btn",
-        })
-        notification.on("close", function () {
-          var tip = document.getElementById("tooltip")
-          if (tip) tip.parentNode.removeChild(tip)
-          notification = null
-        })
+          createSetting("dont-use-prevent-default", "Don't use prevent default", gSettings.noPreventDefault, true, html, () => {
+            gSettings.noPreventDefault = !gSettings.noPreventDefault
+          })
+
+          createSetting("force-dark-background", "Force dark background", gSettings.noBackgroundColor, true, html, () => {
+            gSettings.noBackgroundColor = !gSettings.noBackgroundColor
+          })
+
+          createSetting("enable-smooth-cursors", "Enable smooth cursors", gSettings.smoothCursor, true, html, () => {
+            gSettings.smoothCursor = !gSettings.smoothCursor
+          })
+
+          createSetting("hide-all-cursors", "Hide all cursors", gSettings.hideAllCursors, true, html, () => {
+            gSettings.hideAllCursors = !gSettings.hideAllCursors
+          })
+
+          content.appendChild(html)
+          break
       }
-    } else {
-      var button = document.getElementById("client-settings-btn")
-      var content = document.getElementById("client-settings-content")
-      var tablinks = document.getElementsByClassName("client-settings-tablink")
-      var okButton = document.getElementById("client-settings-ok-btn")
-
-      button.addEventListener("click", (evt) => {
-        evt.stopPropagation()
-        openModal("#client-settings")
-      })
-
-      okButton.addEventListener("click", (evt) => {
-        evt.stopPropagation()
-        closeModal()
-      })
-
-      function createSetting(id, labelText, isChecked, addBr, html, onclickFunc) {
-        const setting = document.createElement("input")
-        setting.type = "checkbox"
-        setting.id = id
-        setting.checked = isChecked
-        setting.onclick = onclickFunc
-
-        const label = document.createElement("label")
-        label.innerText = labelText + ": "
-
-        label.appendChild(setting)
-        html.appendChild(label)
-        if (addBr) html.appendChild(document.createElement("br"))
-      }
-
-      window.changeClientSettingsTab = (evt, tabName) => {
-        content.innerHTML = ""
-
-        for (let index = 0; index < tablinks.length; index++) {
-          tablinks[index].className = tablinks[index].className.replace(" active", "")
-        }
-
-        evt.currentTarget.className += " active"
-
-        switch (tabName.toLowerCase()) {
-          case "chat":
-            var html = document.createElement("div")
-
-            createSetting(
-              "show-timestamps-in-chat",
-              "Show timestamps in chat",
-              gShowTimestampsInChat,
-              true,
-              html,
-              () => {
-                gShowTimestampsInChat = !gShowTimestampsInChat
-                localStorage.showTimestampsInChat = gShowTimestampsInChat
-              }
-            )
-
-            createSetting("show-user-ids-in-chat", "Show user IDs in chat", gShowIdsInChat, true, html, () => {
-              gShowIdsInChat = !gShowIdsInChat
-              localStorage.showIdsInChat = gShowIdsInChat
-            })
-
-            createSetting("show-id-tooltips", "Show ID tooltips", gShowChatTooltips, true, html, () => {
-              gShowChatTooltips = !gShowChatTooltips
-              localStorage.showChatTooltips = gShowChatTooltips
-            })
-
-            createSetting("no-chat-colors", "No chat colors", gNoChatColors, true, html, () => {
-              gNoChatColors = !gNoChatColors
-              localStorage.noChatColors = gNoChatColors
-            })
-
-            createSetting("hide-chat", "Hide chat", gHideChat, false, html, () => {
-              gHideChat = !gHideChat
-              localStorage.hideChat = gHideChat
-
-              if (gHideChat) {
-                $("#chat").hide()
-              } else {
-                $("#chat").show()
-              }
-            })
-
-            content.appendChild(html)
-            break
-
-          case "midi":
-            var html = document.createElement("div")
-
-            createSetting("output-own-notes-to-midi", "Output own notes to MIDI", gOutputOwnNotes, false, html, () => {
-              gOutputOwnNotes = !gOutputOwnNotes
-              localStorage.outputOwnNotes = gOutputOwnNotes
-            })
-
-            content.appendChild(html)
-            break
-
-          case "piano":
-            var html = document.createElement("div")
-
-            createSetting("virtual-piano-layout", "Virtual Piano layout", gVirtualPianoLayout, true, html, () => {
-              gVirtualPianoLayout = !gVirtualPianoLayout
-              localStorage.virtualPianoLayout = gVirtualPianoLayout
-              key_binding = gVirtualPianoLayout ? layouts.VP : layouts.MPP
-            })
-
-            createSetting("show-piano-notes", "Show piano notes", gShowPianoNotes, true, html, () => {
-              gShowPianoNotes = !gShowPianoNotes
-              localStorage.showPianoNotes = gShowPianoNotes
-            })
-
-            createSetting("hide-piano", "Hide piano", gHidePiano, true, html, () => {
-              gHidePiano = !gHidePiano
-              localStorage.hidePiano = gHidePiano
-
-              if (gHidePiano) {
-                $("#piano").hide()
-              } else {
-                $("#piano").show()
-              }
-            })
-
-            var setting = document.createElement("select")
-            setting.classList = "setting"
-            setting.style = "width: calc(58.7% - 2px);"
-
-            setting.onchange = () => {
-              localStorage.highlightScaleNotes = setting.value
-              gHighlightScaleNotes = setting.value
-            }
-
-            const keys = Object.keys(BASIC_PIANO_SCALES) // lol
-            const option = document.createElement("option")
-            option.value = option.innerText = "None"
-            option.selected = !gHighlightScaleNotes
-            setting.appendChild(option)
-
-            for (const key of keys) {
-              const option = document.createElement("option")
-              option.value = key
-              option.innerText = key
-              option.selected = key === gHighlightScaleNotes
-              setting.appendChild(option)
-            }
-
-            if (gHighlightScaleNotes) {
-              setting.value = gHighlightScaleNotes
-            }
-
-            var label = document.createElement("label")
-
-            label.setAttribute("for", setting.id)
-            label.innerText = "Highlighted notes: "
-
-            html.appendChild(label)
-            html.appendChild(setting)
-
-            content.appendChild(html)
-            break
-
-          case "misc":
-            var html = document.createElement("div")
-
-            createSetting("dont-use-prevent-default", "Don't use prevent default", gNoChatColors, true, html, () => {
-              gNoPreventDefault = !gNoPreventDefault
-              localStorage.noPreventDefault = noPreventDefault
-            })
-
-            createSetting("force-dark-background", "Force dark background", gNoBackgroundColor, true, html, () => {
-              gNoBackgroundColor = !gNoBackgroundColor
-              localStorage.noBackgroundColor = gNoBackgroundColor
-
-              if (gClient.channel.settings.color && !gNoBackgroundColor) {
-                setBackgroundColor(gClient.channel.settings.color, gClient.channel.settings.color2)
-              } else {
-                setBackgroundColorToDefault()
-              }
-            })
-
-            createSetting("enable-smooth-cursors", "Enable smooth cursors", gSmoothCursor, true, html, () => {
-              gSmoothCursor = !gSmoothCursor
-              localStorage.smoothCursor = gSmoothCursor
-              if (gSmoothCursor) {
-                $("#cursors").attr("smooth-cursors", "")
-                Object.values(gClient.ppl).forEach(function (participant) {
-                  if (participant.cursorDiv) {
-                    participant.cursorDiv.style.left = ""
-                    participant.cursorDiv.style.top = ""
-                    participant.cursorDiv.style.transform =
-                      "translate3d(" + participant.x + "vw, " + participant.y + "vh, 0)"
-                  }
-                })
-              } else {
-                $("#cursors").removeAttr("smooth-cursors")
-                Object.values(gClient.ppl).forEach(function (participant) {
-                  if (participant.cursorDiv) {
-                    participant.cursorDiv.style.left = participant.x + "%"
-                    participant.cursorDiv.style.top = participant.y + "%"
-                    participant.cursorDiv.style.transform = ""
-                  }
-                })
-              }
-            })
-
-            createSetting("hide-all-cursors", "Hide all cursors", gHideAllCursors, true, html, () => {
-              gHideAllCursors = !gHideAllCursors
-              localStorage.hideAllCursors = gHideAllCursors
-              if (gHideAllCursors) {
-                $("#cursors").hide()
-              } else {
-                $("#cursors").show()
-              }
-            })
-
-            content.appendChild(html)
-            break
-        }
-      }
-
-      changeClientSettingsTab({ currentTarget: document.getElementsByClassName("client-settings-tablink")[0] }, "Chat")
     }
+
+    changeClientSettingsTab({ currentTarget: document.getElementsByClassName("client-settings-tablink")[0] }, "Chat")
   })()
 
   gClient.start()
