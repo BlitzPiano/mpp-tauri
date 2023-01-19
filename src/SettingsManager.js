@@ -1,3 +1,6 @@
+const arrayOrStringEquals = (a, b) => (Array.isArray(a) && Array.isArray(b)) ? a.length === b.length && a.every((val, index) => val === b[index]) : a === b;
+
+// This works across tabs
 class SettingsManager extends EventEmitter {
     constructor() {
         super()
@@ -6,30 +9,18 @@ class SettingsManager extends EventEmitter {
     }
 
     read() {
-        // TODO: Fire events here
-
-        this._pianoMutes = (localStorage.pianoMutes ?? "").split(",").filter((v) => v)
-        this._chatMutes = (localStorage.chatMutes ?? "").split(",").filter((v) => v)
-        this._showIdsInChat = localStorage.showIdsInChat == "true"
-        this._showTimestampsInChat = localStorage.showTimestampsInChat == "true"
-        this._noChatColors = localStorage.noChatColors == "true"
-        this._noBackgroundColor = localStorage.noBackgroundColor == "true"
-        this._outputOwnNotes = localStorage.outputOwnNotes ? localStorage.outputOwnNotes == "true" : true
-        this._virtualPianoLayout = localStorage.virtualPianoLayout == "true"
-        this._smoothCursor = localStorage.smoothCursor == "true"
-        this._showChatTooltips = localStorage.showChatTooltips ? localStorage.showChatTooltips == "true" : true
-        this._showPianoNotes = localStorage.showPianoNotes == "true"
-        this._highlightScaleNotes = localStorage.highlightScaleNotes
-        this._cursorHides = (localStorage.cursorHides ?? "").split(",").filter((v) => v)
-        this._hideAllCursors = localStorage.hideAllCursors == "true"
-        this._hidePiano = localStorage.hidePiano == "true"
-        this._hideChat = localStorage.hideChat == "true"
-        this._noPreventDefault = localStorage.noPreventDefault == "true"
+        for (const prop in this.settings) {
+            const uProp = "_" + prop
+            const now = this.settings[prop](localStorage.getItem(prop))
+            if (!arrayOrStringEquals(this[uProp], now)) {
+                this.emit(prop, this[uProp] = now)
+            }
+        }
     }
 
     emitAll() {
-        for (const setting in this.settings) {
-            this.emit(setting, this[setting])
+        for (const prop in this.settings) {
+            this.emit(prop, this["_" + prop])
         }
     }
 }
@@ -50,24 +41,27 @@ class SettingsManager extends EventEmitter {
         }
     }
 
-    const join = (v) => v.join(",")
+    const identity = (v) => v
+    const isTrue = (v) => v == "true"
+    const split = (v) => v ? v.split(",").filter(identity) : []
+
     setupProperties(SettingsManager.prototype, {
-        pianoMutes: join,
-        chatMutes: join,
-        showIdsInChat: null,
-        showTimestampsInChat: null,
-        noChatColors: null,
-        noBackgroundColor: null,
-        outputOwnNotes: null,
-        virtualPianoLayout: null,
-        smoothCursor: null,
-        showChatTooltips: null,
-        showPianoNotes: null,
-        highlightScaleNotes: null,
-        cursorHides: join,
-        hideAllCursors: null,
-        hidePiano: null,
-        hideChat: null,
-        noPreventDefault: null,
+        pianoMutes: split,
+        chatMutes: split,
+        showIdsInChat: isTrue,
+        showTimestampsInChat: isTrue,
+        noChatColors: isTrue,
+        noBackgroundColor: isTrue,
+        outputOwnNotes: isTrue,
+        virtualPianoLayout: isTrue,
+        smoothCursor: isTrue,
+        showChatTooltips: isTrue,
+        showPianoNotes: isTrue,
+        highlightScaleNotes: identity,
+        cursorHides: split,
+        hideAllCursors: isTrue,
+        hidePiano: isTrue,
+        hideChat: isTrue,
+        noPreventDefault: isTrue,
     })
 })();
